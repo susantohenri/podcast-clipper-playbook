@@ -1,0 +1,94 @@
+{
+  "language": "id",
+  "segments": [
+    {
+      "start": 320.0,
+      "end": 324.5,
+      "text": "Banyak founder baru yang terjebak di fase awal.",
+      "speakerId": "host",
+      "words": [
+        { "text": "Banyak", "start": 320.0, "end": 320.45 },
+        { "text": "founder", "start": 320.46, "end": 321.1 },
+        { "text": "baru", "start": 321.11, "end": 321.5 },
+        { "text": "yang", "start": 321.51, "end": 321.8 },
+        { "text": "terjebak", "start": 321.81, "end": 322.6 },
+        { "text": "di", "start": 322.61, "end": 322.85 },
+        { "text": "fase", "start": 322.86, "end": 323.4 },
+        { "text": "awal.", "start": 323.41, "end": 324.5 }
+      ]
+    },
+    {
+      "start": 325.0,
+      "end": 329.8,
+      "text": "Mereka buru-buru bakar uang sebelum product market fit.",
+      "speakerId": "guest",
+      "words": [
+        { "text": "Mereka", "start": 325.0, "end": 325.5 },
+        { "text": "buru-buru", "start": 325.51, "end": 326.3 },
+        { "text": "bakar", "start": 326.31, "end": 326.9 },
+        { "text": "uang", "start": 326.91, "end": 327.4 },
+        { "text": "sebelum", "start": 327.41, "end": 328.1 },
+        { "text": "product", "start": 328.11, "end": 328.7 },
+        { "text": "market", "start": 328.71, "end": 329.2 },
+        { "text": "fit.", "start": 329.21, "end": 329.8 }
+      ]
+    },
+    {
+      "start": 330.2,
+      "end": 339.5,
+      "text": "Padahal fondasi keuangan dan retensi pengguna itu jauh lebih penting daripada vanity metrics.",
+      "speakerId": "guest",
+      "words": [
+        { "text": "Padahal", "start": 330.2, "end": 330.8 },
+        { "text": "fondasi", "start": 330.81, "end": 331.5 },
+        { "text": "keuangan", "start": 331.51, "end": 332.3 },
+        { "text": "dan", "start": 332.31, "end": 332.6 },
+        { "text": "retensi", "start": 332.61, "end": 333.4 },
+        { "text": "pengguna", "start": 333.41, "end": 334.2 },
+        { "text": "itu", "start": 334.21, "end": 334.5 },
+        { "text": "jauh", "start": 334.51, "end": 335.0 },
+        { "text": "lebih", "start": 335.01, "end": 335.5 },
+        { "text": "penting", "start": 335.51, "end": 336.2 },
+        { "text": "daripada", "start": 336.21, "end": 337.0 },
+        { "text": "vanity", "start": 337.01, "end": 337.8 },
+        { "text": "metrics.", "start": 337.81, "end": 339.5 }
+      ]
+    },
+    {
+      "start": 340.0,
+      "end": 345.0,
+      "text": "Jangan pernah scaling kalau unit economics kamu masih minus!",
+      "speakerId": "guest",
+      "words": [
+        { "text": "Jangan", "start": 340.0, "end": 340.5 },
+        { "text": "pernah", "start": 340.51, "end": 341.0 },
+        { "text": "scaling", "start": 341.01, "end": 341.7 },
+        { "text": "kalau", "start": 341.71, "end": 342.2 },
+        { "text": "unit", "start": 342.21, "end": 342.7 },
+        { "text": "economics", "start": 342.71, "end": 343.6 },
+        { "text": "kamu", "start": 343.61, "end": 344.0 },
+        { "text": "masih", "start": 344.01, "end": 344.4 },
+        { "text": "minus!", "start": 344.41, "end": 345.0 }
+      ]
+    },
+    {
+      "start": 345.5,
+      "end": 355.0,
+      "text": "Perbaiki dulu conversion rate dan kepuasan pelanggan sampai organik growth terbentuk.",
+      "speakerId": "guest",
+      "words": [
+        { "text": "Perbaiki", "start": 345.5, "end": 346.2 },
+        { "text": "dulu", "start": 346.21, "end": 346.7 },
+        { "text": "conversion", "start": 346.71, "end": 347.6 },
+        { "text": "rate", "start": 347.61, "end": 348.1 },
+        { "text": "dan", "start": 348.11, "end": 348.4 },
+        { "text": "kepuasan", "start": 348.41, "end": 349.3 },
+        { "text": "pelanggan", "start": 349.31, "end": 350.2 },
+        { "text": "sampai", "start": 350.21, "end": 350.8 },
+        { "text": "organik", "start": 350.81, "end": 351.6 },
+        { "text": "growth", "start": 351.61, "end": 352.3 },
+        { "text": "terbentuk.", "start": 352.31, "end": 355.0 }
+      ]
+    }
+  ]
+}

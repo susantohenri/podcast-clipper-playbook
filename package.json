@@ -1,0 +1,15 @@
+{
+  "name": "podcast-clipper-playbook",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Production playbook and template for podcast video clipping using LLM Web, Antigravity, FFmpeg, Reframe OS, and HyperFrames",
+  "scripts": {
+    "create-project": "node scripts/create-project.js",
+    "sync": "node scripts/sync.js",
+    "check": "node scripts/run-hf.js check",
+    "preview": "node scripts/run-hf.js preview",
+    "render": "node scripts/run-hf.js render",
+    "smoke-test": "node scripts/smoke-test.js"
+  }
+}

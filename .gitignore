@@ -1,0 +1,12 @@
+node_modules/
+.hyperframes/
+.thumbnails/
+.waveform-cache/
+renders/
+*.mp4
+*.wav
+*.mp3
+!templates/**
+!examples/**
+.DS_Store
+Thumbs.db

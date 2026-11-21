@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "name": "Podcast Clip Example",
+    "language": "id"
+  },
+  "source": {
+    "youtubeUrl": "https://www.youtube.com/watch?v=example12345",
+    "title": "Bincang Bisnis Ep. 42: Rahasia Scaling Startup",
+    "channel": "Startup Talks Indonesia"
+  },
+  "clip": {
+    "main": {
+      "start": 320.0,
+      "end": 355.0
+    },
+    "hook": {
+      "start": 340.0,
+      "end": 345.0
+    }
+  },
+  "transcript": {
+    "path": "input/transcript.json",
+    "format": "normalized-json"
+  },
+  "speakers": [
+    {
+      "id": "host",
+      "name": "Budi (Host)",
+      "color": "#E03A58"
+    },
+    {
+      "id": "guest",
+      "name": "Denny (Guest)",
+      "color": "#2A7A58"
+    }
+  ],
+  "captions": {
+    "enabled": true,
+    "mode": "word-highlight",
+    "position": "lower-third",
+    "maxWordsPerLine": 4,
+    "fontMood": "heavy-condensed",
+    "decoration": "hard-shadow",
+    "textColor": "#FFFFFF",
+    "highlightColor": "#F7C948",
+    "speakerLabels": true
+  },
+  "theme": {
+    "backgroundColor": "#0B1020",
+    "primaryColor": "#7C3AED",
+    "accentColor": "#F59E0B",
+    "textColor": "#FFFFFF"
+  },
+  "audio": {
+    "bgmSrc": "assets/audio/bgm.mp3",
+    "bgmVolume": 0.12
+  },
+  "scenes": {
+    "hook": {
+      "layout": "blurred-backdrop",
+      "mediaTreatment": "rounded-card",
+      "mediaMotion": "shake-on-impact",
+      "textTreatment": {
+        "fontMood": "heavy-condensed",
+        "decoration": "hard-shadow"
+      },
+      "emphasisEffect": "scale-emphasis",
+      "transitionIn": "cut",
+      "transitionOut": "crossfade",
+      "backgroundTreatment": "vignette",
+      "badge": "MOMEN KRUSIAL",
+      "headline": "Jangan Scaling Sebelum Ini Beres!",
+      "highlightWords": ["Scaling", "Beres!"],
+      "animation": "slam",
+      "soundDesign": [
+        {
+          "cue": "whoosh-short",
+          "at": 0,
+          "volume": 0.4,
+          "assetSrc": "assets/audio/sfx/whoosh-short.mp3"
+        }
+      ]
+    },
+    "main": {
+      "layout": "full-bleed",
+      "mediaTreatment": "full-bleed",
+      "mediaMotion": "slow-zoom-in",
+      "textTreatment": {
+        "fontMood": "bold-geometric",
+        "decoration": "clean-flat"
+      },
+      "emphasisEffect": "underline",
+      "transitionIn": "crossfade",
+      "transitionOut": "crossfade",
+      "backgroundTreatment": "gradient",
+      "badge": "STARTUP TALKS",
+      "headline": "Rahasia Fundamental Bisnis",
+      "highlightWords": ["Fundamental"],
+      "animation": "pop",
+      "soundDesign": [
+        {
+          "cue": "pop",
+          "at": 0.5,
+          "volume": 0.3,
+          "assetSrc": "assets/audio/sfx/pop.mp3"
+        }
+      ]
+    }
+  },
+  "distribution": {
+    "youtubeShorts": {
+      "title": "Kesalahan Fatal Saat Scaling Bisnis! ⚠️ #Shorts",
+      "description": "Banyak founder terjebak scaling sebelum cashflow stabil. Dengarkan tips dari praktisi langsung di video ini.\n\n#bisnis #startup #entrepreneur",
+      "tags": ["bisnis", "startup", "investasi", "cashflow", "podcast"],
+      "hashtags": ["#shorts", "#bisnis", "#startup"]
+    },
+    "tiktok": {
+      "caption": "Founder startup wajib tonton ini sebelum buang duit buat scaling! 🚀",
+      "hashtags": ["#bisnis", "#startupindonesia", "#tipsbisnis"]
+    },
+    "instagramReels": {
+      "caption": "Kunci utama scaling bukan cuma marketing, tapi fundamental keuangan. Simak penjelasannya! 👇",
+      "hashtags": ["#reels", "#bisnisonline", "#edukasibisnis"]
+    },
+    "facebookReels": {
+      "caption": "Pelajaran berharga untuk semua pelaku usaha di era digital.",
+      "hashtags": ["#bisnis", "#wirausaha"]
+    }
+  },
+  "thumbnail": {
+    "referenceTimeSeconds": 1,
+    "referenceImagePath": "working/thumbnail-reference.jpg",
+    "outputPath": "output/thumbnail.jpg"
+  }
+}

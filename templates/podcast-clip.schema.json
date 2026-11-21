@@ -1,0 +1,347 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PodcastClipSpecification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "project",
+    "source",
+    "clip",
+    "transcript",
+    "speakers",
+    "captions",
+    "theme",
+    "audio",
+    "scenes",
+    "distribution",
+    "thumbnail"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "language"],
+      "properties": {
+        "name": { "type": "string" },
+        "language": { "type": "string" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["youtubeUrl", "title", "channel"],
+      "properties": {
+        "youtubeUrl": { "type": "string" },
+        "title": { "type": "string" },
+        "channel": { "type": "string" }
+      }
+    },
+    "clip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["main", "hook"],
+      "properties": {
+        "main": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["start", "end"],
+          "properties": {
+            "start": { "type": "number", "minimum": 0 },
+            "end": { "type": "number", "minimum": 0 }
+          }
+        },
+        "hook": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["start", "end"],
+          "properties": {
+            "start": { "type": "number", "minimum": 0 },
+            "end": { "type": "number", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "transcript": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "format"],
+      "properties": {
+        "path": { "type": "string" },
+        "format": {
+          "type": "string",
+          "enum": ["normalized-json", "vtt", "srt"]
+        }
+      }
+    },
+    "speakers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "color"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "color": { "type": "string" }
+        }
+      }
+    },
+    "captions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "mode",
+        "position",
+        "maxWordsPerLine",
+        "fontMood",
+        "decoration",
+        "textColor",
+        "highlightColor",
+        "speakerLabels"
+      ],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "mode": {
+          "type": "string",
+          "enum": ["word-highlight", "phrase", "off"]
+        },
+        "position": {
+          "type": "string",
+          "enum": ["lower-third", "center-lower"]
+        },
+        "maxWordsPerLine": { "type": "integer", "minimum": 1 },
+        "fontMood": {
+          "type": "string",
+          "enum": ["default", "heavy-condensed", "bold-geometric"]
+        },
+        "decoration": {
+          "type": "string",
+          "enum": ["thick-outline", "hard-shadow", "soft-glow", "clean-flat"]
+        },
+        "textColor": { "type": "string" },
+        "highlightColor": { "type": "string" },
+        "speakerLabels": { "type": "boolean" }
+      }
+    },
+    "theme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backgroundColor", "primaryColor", "accentColor", "textColor"],
+      "properties": {
+        "backgroundColor": { "type": "string" },
+        "primaryColor": { "type": "string" },
+        "accentColor": { "type": "string" },
+        "textColor": { "type": "string" }
+      }
+    },
+    "audio": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bgmSrc": { "type": "string" },
+        "bgmVolume": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "scenes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hook", "main"],
+      "properties": {
+        "hook": { "$ref": "#/definitions/sceneProperties" },
+        "main": { "$ref": "#/definitions/sceneProperties" }
+      }
+    },
+    "distribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["youtubeShorts", "tiktok", "instagramReels", "facebookReels"],
+      "properties": {
+        "youtubeShorts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["title", "description", "tags", "hashtags"],
+          "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "tags": { "type": "array", "items": { "type": "string" } },
+            "hashtags": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "tiktok": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["caption", "hashtags"],
+          "properties": {
+            "caption": { "type": "string" },
+            "hashtags": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "instagramReels": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["caption", "hashtags"],
+          "properties": {
+            "caption": { "type": "string" },
+            "hashtags": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "facebookReels": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["caption", "hashtags"],
+          "properties": {
+            "caption": { "type": "string" },
+            "hashtags": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "thumbnail": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["referenceTimeSeconds", "referenceImagePath", "outputPath"],
+      "properties": {
+        "referenceTimeSeconds": { "type": "number", "minimum": 0 },
+        "referenceImagePath": { "type": "string" },
+        "outputPath": { "type": "string" }
+      }
+    }
+  },
+  "definitions": {
+    "sceneProperties": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "layout": {
+          "type": "string",
+          "enum": ["blurred-backdrop", "full-bleed", "split-screen"]
+        },
+        "mediaTreatment": {
+          "type": "string",
+          "enum": ["full-bleed", "rounded-card", "floating-panel"]
+        },
+        "mediaMotion": {
+          "type": "string",
+          "enum": [
+            "none",
+            "slow-zoom-in",
+            "zoom-out",
+            "pan-left",
+            "pan-right",
+            "shake-on-impact",
+            "handheld-drift",
+            "parallax",
+            "3d-tilt",
+            "subtle-float"
+          ]
+        },
+        "textTreatment": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "fontMood": {
+              "type": "string",
+              "enum": ["default", "heavy-condensed", "bold-geometric"]
+            },
+            "decoration": {
+              "type": "string",
+              "enum": ["thick-outline", "hard-shadow", "soft-glow", "clean-flat"]
+            }
+          }
+        },
+        "emphasisEffect": {
+          "type": "string",
+          "enum": [
+            "underline",
+            "circle",
+            "scribble",
+            "color-invert",
+            "spotlight",
+            "burst",
+            "scale-emphasis"
+          ]
+        },
+        "transitionIn": {
+          "type": "string",
+          "enum": [
+            "cut",
+            "crossfade",
+            "blur-crossfade",
+            "push-up",
+            "zoom-through",
+            "elastic-push",
+            "circle-iris",
+            "whip-pan",
+            "light-leak"
+          ]
+        },
+        "transitionOut": {
+          "type": "string",
+          "enum": [
+            "cut",
+            "crossfade",
+            "blur-crossfade",
+            "push-up",
+            "zoom-through",
+            "elastic-push",
+            "circle-iris",
+            "whip-pan",
+            "light-leak"
+          ]
+        },
+        "backgroundTreatment": {
+          "type": "string",
+          "enum": [
+            "radial-glow",
+            "noise-texture",
+            "gradient",
+            "floating-particles",
+            "vignette",
+            "solid-color"
+          ]
+        },
+        "badge": { "type": "string" },
+        "headline": { "type": "string" },
+        "highlightWords": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "animation": {
+          "type": "string",
+          "enum": [
+            "slam",
+            "pop",
+            "shake",
+            "zoom",
+            "slide",
+            "spring",
+            "bounce",
+            "fade",
+            "blur-reveal",
+            "elastic"
+          ]
+        },
+        "soundDesign": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["cue", "at", "volume", "assetSrc"],
+            "properties": {
+              "cue": { "type": "string" },
+              "at": { "type": "number", "minimum": 0 },
+              "volume": { "type": "number", "minimum": 0, "maximum": 1 },
+              "assetSrc": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

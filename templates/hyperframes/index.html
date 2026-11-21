@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, height=1920">
+  <title>Podcast Clipper Video</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Montserrat:wght@700;800;900&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- GSAP Animation Library -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+
+  <style>
+    :root {
+      --color-primary: #7C3AED;
+      --color-accent: #F59E0B;
+      --color-bg-dark: #0B1020;
+      --color-text: #FFFFFF;
+      --color-highlight: #F7C948;
+      --font-body: 'Inter', sans-serif;
+      --font-geometric: 'Montserrat', sans-serif;
+      --font-condensed: 'Oswald', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      background: var(--color-bg-dark);
+      font-family: var(--font-body);
+      color: var(--color-text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #root {
+      position: relative;
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      background: var(--color-bg-dark);
+    }
+
+    /* Top Progress Bar */
+    #progress-wrap {
+      position: absolute;
+      top: 36px;
+      left: 48px;
+      right: 48px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+      overflow: hidden;
+      z-index: 900;
+    }
+
+    #progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
+    }
+
+    /* Base Clip Container for HyperFrames */
+    .clip {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+    }
+
+    .scene-inner {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+    }
+
+    /* Background Treatments */
+    .bg-wrapper {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+    }
+
+    .bg-backdrop-blur {
+      position: absolute;
+      inset: -40px;
+      width: calc(100% + 80px);
+      height: calc(100% + 80px);
+      object-fit: cover;
+      filter: blur(48px) brightness(0.35);
+      transform: scale(1.15);
+    }
+
+    .bg-fx-vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.85) 100%);
+      pointer-events: none;
+    }
+
+    .bg-fx-radial-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 35%, rgba(124, 58, 237, 0.35) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .bg-fx-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(11, 16, 32, 0.4) 0%, rgba(11, 16, 32, 0.95) 100%);
+      pointer-events: none;
+    }
+
+    .bg-fx-noise {
+      position: absolute;
+      inset: 0;
+      background: repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0.02) 0, rgba(0,0,0,0.05) 2px);
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+
+    .bg-fx-particles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .particle-dot {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      filter: blur(1px);
+      opacity: 0.65;
+    }
+
+    /* Media Treatments */
+    .media-container {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .scene-media {
+      width: 1080px;
+      height: 1920px;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Layout Treatments */
+    .layout-full-bleed .media-container {
+      width: 1080px;
+      height: 1920px;
+    }
+
+    .layout-blurred-backdrop .media-container.treatment-rounded-card {
+      top: 140px;
+      left: 54px;
+      width: 972px;
+      height: 1480px;
+      border-radius: 36px;
+      overflow: hidden;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 0 2px rgba(255, 255, 255, 0.1);
+    }
+
+    .layout-blurred-backdrop .media-container.treatment-floating-panel {
+      top: 160px;
+      left: 60px;
+      width: 960px;
+      height: 1420px;
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 35px 80px rgba(0, 0, 0, 0.85), 0 0 25px rgba(124, 58, 237, 0.4);
+    }
+
+    .layout-split-screen .media-container {
+      top: 180px;
+      left: 54px;
+      width: 972px;
+      height: 1200px;
+      border-radius: 32px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    }
+
+    .treatment-full-bleed {
+      border-radius: 0 !important;
+      box-shadow: none !important;
+    }
+
+    /* Header / Editorial Overlay */
+    .header-overlay {
+      position: absolute;
+      top: 90px;
+      left: 54px;
+      right: 54px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      z-index: 500;
+      pointer-events: none;
+    }
+
+    .scene-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 24px;
+      background: var(--color-primary);
+      color: #FFFFFF;
+      font-family: var(--font-geometric);
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-radius: 999px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      margin-bottom: 20px;
+    }
+
+    .scene-headline {
+      font-family: var(--font-geometric);
+      font-size: 54px;
+      font-weight: 900;
+      line-height: 1.15;
+      color: #FFFFFF;
+      max-width: 960px;
+      text-align: center;
+    }
+
+    /* Font Moods */
+    .font-mood-heavy-condensed {
+      font-family: var(--font-condensed), sans-serif !important;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .font-mood-bold-geometric {
+      font-family: var(--font-geometric), sans-serif !important;
+      letter-spacing: -0.5px;
+    }
+
+    .font-mood-default {
+      font-family: var(--font-body), sans-serif !important;
+    }
+
+    /* Text Decorations */
+    .decoration-thick-outline {
+      -webkit-text-stroke: 8px #000000;
+      paint-order: stroke fill;
+      text-shadow: 0 6px 16px rgba(0,0,0,0.8);
+    }
+
+    .decoration-hard-shadow {
+      text-shadow: 5px 6px 0px #000000, 0 10px 25px rgba(0,0,0,0.8);
+    }
+
+    .decoration-soft-glow {
+      text-shadow: 0 0 25px var(--color-accent), 0 0 50px rgba(0,0,0,0.8);
+    }
+
+    .decoration-clean-flat {
+      text-shadow: 0 4px 14px rgba(0,0,0,0.6);
+    }
+
+    /* Emphasis Effects */
+    .highlight-span {
+      color: var(--color-highlight);
+      display: inline-block;
+    }
+
+    .emphasis-underline .highlight-span {
+      border-bottom: 6px solid var(--color-accent);
+      padding-bottom: 2px;
+    }
+
+    .emphasis-circle .highlight-span {
+      border: 4px solid var(--color-accent);
+      border-radius: 16px;
+      padding: 0 12px;
+    }
+
+    .emphasis-color-invert .highlight-span {
+      background: var(--color-highlight);
+      color: #000000;
+      padding: 2px 14px;
+      border-radius: 8px;
+    }
+
+    .emphasis-spotlight .highlight-span {
+      box-shadow: 0 0 35px var(--color-accent);
+      border-radius: 8px;
+    }
+
+    /* Subtitle / Caption Zone */
+    .caption-container {
+      position: absolute;
+      left: 54px;
+      right: 54px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 700;
+      pointer-events: none;
+    }
+
+    .position-lower-third {
+      bottom: 240px;
+    }
+
+    .position-center-lower {
+      bottom: 390px;
+    }
+
+    .speaker-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 20px;
+      font-size: 22px;
+      font-weight: 700;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.75);
+      border: 2px solid #FFFFFF;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+    }
+
+    .caption-box {
+      background: rgba(11, 16, 32, 0.72);
+      backdrop-filter: blur(12px);
+      padding: 16px 28px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 940px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65);
+    }
+
+    .caption-line {
+      font-size: 44px;
+      font-weight: 800;
+      line-height: 1.25;
+      color: #FFFFFF;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .caption-word {
+      display: inline-block;
+      color: #FFFFFF;
+    }
+
+    .caption-word.active {
+      color: var(--color-highlight) !important;
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-width="1080" data-height="1920">
+
+    <!-- Global Progress Bar -->
+    <div id="progress-wrap">
+      <div id="progress-bar"></div>
+    </div>
+
+    <!-- Scenes Container -->
+    <div id="scenes-wrapper"></div>
+
+    <!-- Captions Container -->
+    <div id="caption-container" class="caption-container position-lower-third">
+      <div id="speaker-badge" class="speaker-pill" style="display: none;"></div>
+      <div id="caption-box" class="caption-box" style="display: none;">
+        <div id="caption-line" class="caption-line"></div>
+      </div>
+    </div>
+
+    <!-- Audio Wrapper (Stamped by sync.js) -->
+    <div id="audio-wrapper"></div>
+
+  </div>
+
+  <script src="scenes.js"></script>
+  <script>
+    (function () {
+      const config = window.SCENES_DATA;
+      if (!config) {
+        console.warn("[HyperFrames] window.SCENES_DATA not found.");
+        return;
+      }
+
+      // 1. Set theme variables
+      if (config.theme) {
+        if (config.theme.backgroundColor) {
+          document.documentElement.style.setProperty('--color-bg-dark', config.theme.backgroundColor);
+        }
+        if (config.theme.primaryColor) {
+          document.documentElement.style.setProperty('--color-primary', config.theme.primaryColor);
+        }
+        if (config.theme.accentColor) {
+          document.documentElement.style.setProperty('--color-accent', config.theme.accentColor);
+        }
+        if (config.theme.textColor) {
+          document.documentElement.style.setProperty('--color-text', config.theme.textColor);
+        }
+      }
+      if (config.captions?.highlightColor) {
+        document.documentElement.style.setProperty('--color-highlight', config.captions.highlightColor);
+      }
+
+      const hookDur = parseFloat(config.timings?.hookDuration) || (config.clip.hook.end - config.clip.hook.start);
+      const mainDur = parseFloat(config.timings?.mainDuration) || (config.clip.main.end - config.clip.main.start);
+      const totalDur = hookDur + mainDur;
+
+      const scenesWrapper = document.getElementById('scenes-wrapper');
+
+      // Setup Paused GSAP Timeline
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Animate progress bar across total duration
+      tl.fromTo('#progress-bar', { width: '0%' }, { width: '100%', duration: totalDur, ease: 'none' }, 0);
+
+      // Helper for Speaker Lookup
+      const speakerMap = {};
+      if (Array.isArray(config.speakers)) {
+        config.speakers.forEach(sp => {
+          speakerMap[sp.id] = sp;
+        });
+      }
+
+      // Scene definitions
+      const sceneList = [
+        {
+          key: 'hook',
+          id: 'scene-hook',
+          spec: config.scenes?.hook || {},
+          start: 0,
+          duration: hookDur,
+          videoSrc: 'working/hook-portrait.mp4',
+          defaultBadge: 'HOOK',
+          isFirst: true,
+          transcript: config.transcriptHook || []
+        },
+        {
+          key: 'main',
+          id: 'scene-main',
+          spec: config.scenes?.main || {},
+          start: hookDur,
+          duration: mainDur,
+          videoSrc: 'working/main-clip-portrait.mp4',
+          defaultBadge: '',
+          isFirst: false,
+          transcript: config.transcriptMain || []
+        }
+      ];
+
+      sceneList.forEach((sc, idx) => {
+        const spec = sc.spec;
+        const layout = spec.layout || 'blurred-backdrop';
+        const treatment = spec.mediaTreatment || 'full-bleed';
+        const motion = spec.mediaMotion || 'slow-zoom-in';
+        const bgTreatment = spec.backgroundTreatment || 'vignette';
+        const fontMood = spec.textTreatment?.fontMood || 'bold-geometric';
+        const decoration = spec.textTreatment?.decoration || 'hard-shadow';
+        const emphasis = spec.emphasisEffect || 'none';
+        const badgeText = spec.badge !== undefined ? spec.badge : sc.defaultBadge;
+        const headlineText = spec.headline || '';
+        const anim = spec.animation || 'pop';
+
+        const sceneEl = document.createElement('div');
+        sceneEl.id = sc.id;
+        sceneEl.className = `clip layout-${layout}`;
+        sceneEl.setAttribute('data-start', sc.start.toFixed(2));
+        sceneEl.setAttribute('data-duration', sc.duration.toFixed(2));
+
+        // Background FX HTML
+        let bgFxHtml = '';
+        if (bgTreatment === 'vignette') {
+          bgFxHtml += '<div class="bg-fx-vignette"></div>';
+        } else if (bgTreatment === 'radial-glow') {
+          bgFxHtml += '<div class="bg-fx-radial-glow"></div>';
+        } else if (bgTreatment === 'gradient') {
+          bgFxHtml += '<div class="bg-fx-gradient"></div>';
+        } else if (bgTreatment === 'noise-texture') {
+          bgFxHtml += '<div class="bg-fx-noise"></div>';
+        } else if (bgTreatment === 'floating-particles') {
+          bgFxHtml += `
+            <div class="bg-fx-particles" id="${sc.id}-particles">
+              <div class="particle-dot" style="top: 20%; left: 15%;"></div>
+              <div class="particle-dot" style="top: 35%; right: 18%; width: 14px; height: 14px;"></div>
+              <div class="particle-dot" style="top: 65%; left: 22%; width: 8px; height: 8px;"></div>
+              <div class="particle-dot" style="top: 78%; right: 25%; width: 12px; height: 12px;"></div>
+            </div>`;
+        }
+
+        // Formatted headline with highlights
+        let formattedHeadline = headlineText;
+        if (Array.isArray(spec.highlightWords) && spec.highlightWords.length > 0) {
+          spec.highlightWords.forEach(word => {
+            const regex = new RegExp(`(${word})`, 'gi');
+            formattedHeadline = formattedHeadline.replace(regex, '<span class="highlight-span">$1</span>');
+          });
+        }
+
+        sceneEl.innerHTML = `
+          <div class="scene-inner" id="${sc.id}-inner">
+            <div class="bg-wrapper">
+              ${layout === 'blurred-backdrop' ? `<video class="bg-backdrop-blur" src="${sc.videoSrc}" muted playsinline></video>` : ''}
+              <div class="media-container treatment-${treatment}" id="${sc.id}-media-container">
+                <video id="${sc.id}-media" class="scene-media" src="${sc.videoSrc}" data-start="${sc.start.toFixed(2)}" data-duration="${sc.duration.toFixed(2)}" muted playsinline></video>
+              </div>
+              ${bgFxHtml}
+            </div>
+
+            ${(badgeText || headlineText) ? `
+              <div class="header-overlay font-mood-${fontMood} decoration-${decoration} emphasis-${emphasis}">
+                ${badgeText ? `<div id="${sc.id}-badge" class="scene-badge">${badgeText}</div>` : ''}
+                ${headlineText ? `<div id="${sc.id}-headline" class="scene-headline">${formattedHeadline}</div>` : ''}
+              </div>
+            ` : ''}
+          </div>
+        `;
+
+        scenesWrapper.appendChild(sceneEl);
+
+        const innerSel = `#${sc.id}-inner`;
+        const mediaContainerSel = `#${sc.id}-media-container`;
+        const badgeSel = `#${sc.id}-badge`;
+        const headlineSel = `#${sc.id}-headline`;
+
+        // 1. Transition In
+        const transIn = spec.transitionIn || (sc.isFirst ? 'cut' : 'crossfade');
+        if (sc.isFirst && transIn === 'cut') {
+          tl.set(innerSel, { opacity: 1 }, 0);
+        } else {
+          switch (transIn) {
+            case 'cut':
+              tl.set(innerSel, { opacity: 1 }, sc.start);
+              break;
+            case 'blur-crossfade':
+              tl.fromTo(innerSel, { opacity: 0, filter: 'blur(24px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.45, ease: 'power2.out' }, sc.start);
+              break;
+            case 'push-up':
+              tl.fromTo(innerSel, { y: 600, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, sc.start);
+              break;
+            case 'zoom-through':
+              tl.fromTo(innerSel, { scale: 1.35, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'power3.out' }, sc.start);
+              break;
+            case 'elastic-push':
+              tl.fromTo(innerSel, { y: 400, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: 'back.out(1.5)' }, sc.start);
+              break;
+            case 'circle-iris':
+              tl.fromTo(innerSel, { clipPath: 'circle(0% at 50% 50%)', opacity: 1 }, { clipPath: 'circle(120% at 50% 50%)', opacity: 1, duration: 0.5, ease: 'power3.inOut' }, sc.start);
+              break;
+            case 'whip-pan':
+              tl.fromTo(innerSel, { x: -700, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: 'power4.out' }, sc.start);
+              break;
+            case 'light-leak':
+              tl.fromTo(innerSel, { filter: 'brightness(2.4)', opacity: 0 }, { filter: 'brightness(1)', opacity: 1, duration: 0.45, ease: 'power2.out' }, sc.start);
+              break;
+            case 'crossfade':
+            default:
+              tl.fromTo(innerSel, { opacity: 0 }, { opacity: 1, duration: 0.35, ease: 'power2.out' }, sc.start);
+              break;
+          }
+        }
+
+        // 2. Media Motion
+        switch (motion) {
+          case 'shake-on-impact':
+            tl.fromTo(mediaContainerSel, { x: -16, y: 12, scale: 1.05 }, { x: 0, y: 0, scale: 1.0, duration: 0.35, ease: 'power4.out' }, sc.start);
+            tl.to(mediaContainerSel, { scale: 1.08, duration: sc.duration - 0.35, ease: 'none' }, sc.start + 0.35);
+            break;
+          case 'pan-right':
+            tl.fromTo(mediaContainerSel, { x: -45, scale: 1.08 }, { x: 45, scale: 1.08, duration: sc.duration, ease: 'none' }, sc.start);
+            break;
+          case 'pan-left':
+            tl.fromTo(mediaContainerSel, { x: 45, scale: 1.08 }, { x: -45, scale: 1.08, duration: sc.duration, ease: 'none' }, sc.start);
+            break;
+          case 'handheld-drift':
+            tl.fromTo(mediaContainerSel, { x: -14, y: -10, scale: 1.06, rotate: -0.6 }, { x: 14, y: 10, scale: 1.06, rotate: 0.6, duration: sc.duration, ease: 'sine.inOut' }, sc.start);
+            break;
+          case 'slow-zoom-in':
+            tl.fromTo(mediaContainerSel, { scale: 1.0, y: 0 }, { scale: 1.12, y: -20, duration: sc.duration, ease: 'none' }, sc.start);
+            break;
+          case 'zoom-out':
+            tl.fromTo(mediaContainerSel, { scale: 1.14, y: -20 }, { scale: 1.0, y: 0, duration: sc.duration, ease: 'none' }, sc.start);
+            break;
+          case 'parallax':
+            tl.fromTo(mediaContainerSel, { scale: 1.08, y: 25 }, { scale: 1.08, y: -25, duration: sc.duration, ease: 'none' }, sc.start);
+            break;
+          case '3d-tilt':
+            tl.fromTo(mediaContainerSel, { scale: 1.06, transformPerspective: 900, rotateX: 4, rotateY: -4 }, { scale: 1.06, transformPerspective: 900, rotateX: -3, rotateY: 3, duration: sc.duration, ease: 'sine.inOut' }, sc.start);
+            break;
+          case 'subtle-float':
+            tl.fromTo(mediaContainerSel, { scale: 1.05, y: 16 }, { scale: 1.05, y: -16, duration: sc.duration, ease: 'sine.inOut' }, sc.start);
+            break;
+          case 'none':
+          default:
+            break;
+        }
+
+        // 3. Badge Animation
+        if (badgeText && document.querySelector(badgeSel)) {
+          tl.fromTo(badgeSel, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(2)' }, sc.start + 0.15);
+        }
+
+        // 4. Headline Animation
+        if (headlineText && document.querySelector(headlineSel)) {
+          switch (anim) {
+            case 'slam':
+              tl.fromTo(headlineSel, { scale: 1.35, opacity: 0, y: 35 }, { scale: 1, opacity: 1, y: 0, duration: 0.4, ease: 'power4.out' }, sc.start + 0.25);
+              break;
+            case 'pop':
+              tl.fromTo(headlineSel, { scale: 0.75, opacity: 0, y: 20 }, { scale: 1, opacity: 1, y: 0, duration: 0.4, ease: 'back.out(2)' }, sc.start + 0.25);
+              break;
+            case 'shake':
+              tl.fromTo(headlineSel, { scale: 0.9, opacity: 0, y: 20 }, { scale: 1, opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }, sc.start + 0.2);
+              tl.fromTo(headlineSel, { x: -16 }, { x: 0, duration: 0.35, ease: 'elastic.out(1.2, 0.3)' }, sc.start + 0.25);
+              break;
+            case 'zoom':
+              tl.fromTo(headlineSel, { scale: 0.25, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.42, ease: 'power3.out' }, sc.start + 0.25);
+              break;
+            case 'slide':
+              tl.fromTo(headlineSel, { x: -140, opacity: 0 }, { x: 0, opacity: 1, duration: 0.42, ease: 'power3.out' }, sc.start + 0.25);
+              break;
+            case 'spring':
+              tl.fromTo(headlineSel, { y: 85, scaleY: 1.3, opacity: 0 }, { y: 0, scaleY: 1, opacity: 1, duration: 0.55, ease: 'elastic.out(1, 0.4)' }, sc.start + 0.25);
+              break;
+            case 'bounce':
+              tl.fromTo(headlineSel, { y: -110, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: 'bounce.out' }, sc.start + 0.25);
+              break;
+            case 'fade':
+              tl.fromTo(headlineSel, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }, sc.start + 0.25);
+              break;
+            case 'blur-reveal':
+              tl.fromTo(headlineSel, { filter: 'blur(20px)', opacity: 0 }, { filter: 'blur(0px)', opacity: 1, duration: 0.45, ease: 'power2.out' }, sc.start + 0.25);
+              break;
+            case 'elastic':
+              tl.fromTo(headlineSel, { scaleX: 1.4, scaleY: 0.8, opacity: 0 }, { scaleX: 1, scaleY: 1, opacity: 1, duration: 0.55, ease: 'elastic.out(1.2, 0.4)' }, sc.start + 0.25);
+              break;
+            default:
+              tl.fromTo(headlineSel, { scale: 0.8, opacity: 0, y: 20 }, { scale: 1, opacity: 1, y: 0, duration: 0.4, ease: 'back.out(1.7)' }, sc.start + 0.25);
+              break;
+          }
+
+          if (emphasis === 'burst' || emphasis === 'scale-emphasis') {
+            tl.fromTo(`${headlineSel} .highlight-span`, { scale: 1 }, { scale: 1.15, duration: 0.25, yoyo: true, repeat: 1, ease: 'power2.out' }, sc.start + 0.65);
+          }
+        }
+
+        // 5. Particles Motion
+        if (bgTreatment === 'floating-particles') {
+          tl.fromTo(`#${sc.id}-particles`, { y: 30 }, { y: -30, duration: sc.duration, ease: 'none' }, sc.start);
+        }
+
+        // 6. Transition Out (for Hook Scene)
+        if (sc.key === 'hook') {
+          const transOut = spec.transitionOut || 'crossfade';
+          const end = sc.duration;
+          switch (transOut) {
+            case 'blur-crossfade':
+              tl.to(innerSel, { opacity: 0.2, filter: 'blur(16px)', duration: 0.28, ease: 'power2.in' }, end - 0.28);
+              break;
+            case 'push-up':
+              tl.to(innerSel, { y: -300, opacity: 0.2, duration: 0.28, ease: 'power2.in' }, end - 0.28);
+              break;
+            case 'zoom-through':
+              tl.to(innerSel, { scale: 1.25, opacity: 0.2, duration: 0.28, ease: 'power2.in' }, end - 0.28);
+              break;
+            case 'elastic-push':
+              tl.to(innerSel, { y: -280, opacity: 0.2, duration: 0.28, ease: 'power2.in' }, end - 0.28);
+              break;
+            case 'circle-iris':
+              tl.to(innerSel, { clipPath: 'circle(0% at 50% 50%)', duration: 0.28, ease: 'power3.in' }, end - 0.28);
+              break;
+            case 'whip-pan':
+              tl.to(innerSel, { x: 700, opacity: 0.2, duration: 0.28, ease: 'power3.in' }, end - 0.28);
+              break;
+            case 'light-leak':
+              tl.to(innerSel, { filter: 'brightness(2.2)', opacity: 0.2, duration: 0.28, ease: 'power2.in' }, end - 0.28);
+              break;
+            case 'cut':
+              break;
+            case 'crossfade':
+            default:
+              tl.to(innerSel, { opacity: 0.2, duration: 0.22, ease: 'power1.in' }, end - 0.22);
+              break;
+          }
+        }
+      });
+
+      // ==========================================
+      // SUBTITLE ENGINE
+      // ==========================================
+      const captionsConfig = config.captions || {};
+      const captionContainer = document.getElementById('caption-container');
+      const speakerBadge = document.getElementById('speaker-badge');
+      const captionBox = document.getElementById('caption-box');
+      const captionLine = document.getElementById('caption-line');
+
+      if (captionsConfig.enabled && captionsConfig.mode !== 'off') {
+        const position = captionsConfig.position || 'lower-third';
+        captionContainer.className = `caption-container position-${position}`;
+
+        const fontMood = captionsConfig.fontMood || 'heavy-condensed';
+        const decoration = captionsConfig.decoration || 'hard-shadow';
+        captionBox.classList.add(`font-mood-${fontMood}`);
+        captionBox.classList.add(`decoration-${decoration}`);
+
+        let lineCounter = 0;
+
+        // Process segments for both Hook and Main
+        sceneList.forEach(sc => {
+          const segments = sc.transcript || [];
+          segments.forEach(seg => {
+            const segStart = sc.start + seg.relStart;
+            const segEnd = sc.start + seg.relEnd;
+            const segDur = Math.max(0.1, segEnd - segStart);
+            const lineId = `cap-line-${++lineCounter}`;
+
+            const speaker = seg.speakerId ? speakerMap[seg.speakerId] : null;
+
+            // Build Line DOM
+            const lineEl = document.createElement('div');
+            lineEl.id = lineId;
+            lineEl.className = 'caption-line-item';
+            lineEl.style.display = 'none';
+
+            if (captionsConfig.mode === 'word-highlight' && Array.isArray(seg.words) && seg.words.length > 0) {
+              seg.words.forEach((w, wIdx) => {
+                const wordSpan = document.createElement('span');
+                wordSpan.id = `${lineId}-w-${wIdx}`;
+                wordSpan.className = 'caption-word';
+                wordSpan.textContent = w.text;
+                lineEl.appendChild(wordSpan);
+              });
+            } else {
+              lineEl.textContent = seg.text;
+            }
+
+            captionLine.appendChild(lineEl);
+
+            // Timeline triggers for segment line
+            tl.call(() => {
+              if (captionsConfig.speakerLabels && speaker) {
+                speakerBadge.textContent = speaker.name;
+                speakerBadge.style.color = speaker.color || '#FFFFFF';
+                speakerBadge.style.borderColor = speaker.color || '#FFFFFF';
+              }
+            }, null, segStart);
+
+            tl.set(lineEl, { display: 'flex', opacity: 1, visibility: 'visible' }, segStart);
+            tl.set(captionBox, { display: 'block', opacity: 1, visibility: 'visible' }, segStart);
+            if (captionsConfig.speakerLabels && speaker) {
+              tl.set(speakerBadge, { display: 'inline-flex', opacity: 1, visibility: 'visible' }, segStart);
+            }
+
+            // Word-level highlight triggers (pure GSAP deterministic)
+            if (captionsConfig.mode === 'word-highlight' && Array.isArray(seg.words) && seg.words.length > 0) {
+              seg.words.forEach((w, wIdx) => {
+                const wStart = sc.start + w.relStart;
+                const wEnd = sc.start + w.relEnd;
+                const wordSel = `#${lineId}-w-${wIdx}`;
+                tl.set(wordSel, { color: config.captions?.highlightColor || '#F7C948', scale: 1.1 }, wStart);
+                tl.set(wordSel, { color: '#FFFFFF', scale: 1.0 }, wEnd);
+              });
+            }
+
+            // Deterministic hard kill at segment end
+            tl.set(lineEl, { opacity: 0, visibility: 'hidden', display: 'none' }, segEnd);
+            tl.set(captionBox, { opacity: 0, visibility: 'hidden', display: 'none' }, segEnd);
+            tl.set(speakerBadge, { opacity: 0, visibility: 'hidden', display: 'none' }, segEnd);
+          });
+        });
+      }
+
+      // Register Paused Root Timeline with HyperFrames
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    })();
+  </script>
+</body>
+</html>
