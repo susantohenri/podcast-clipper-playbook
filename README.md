@@ -10,7 +10,7 @@ Repository ini dirancang sebagai sistem turnkey untuk mengubah episode podcast Y
 
 | Entitas | Peran Utama | Tanggung Jawab |
 | :--- | :--- | :--- |
-| **Terminal (User)** | Eksekutor Lokal Utama | Menjalankan perintah lokal tanpa memakan token LLM: scaffolding project (`create-project`), download subtitle & klip (`yt-dlp`), slicing & perakitan audio (`sync.js`), rendering (`HyperFrames`), dan ekstraksi frame (`ffmpeg`). |
+| **Terminal (User)** | Eksekutor Lokal Utama | Menjalankan perintah lokal tanpa memakan token LLM: scaffolding project (`create-project`), download klip video landscape (`yt-dlp`), slicing & perakitan audio (`sync.js`), rendering (`HyperFrames`), dan ekstraksi frame (`ffmpeg`). |
 | **LLM Web** | Otak & Kurator Kreatif | Menganalisis transkrip, memilih 3–5 kandidat klip terbaik (15–60 detik), merumuskan hook, merekomendasikan keyword riset, menyusun metadata multi-platform, merancang creative direction, dan menulis spesifikasi `podcast-clip.json`. |
 | **User** | Operator & Sutradara | Memberikan URL YouTube, riset keyword manual di [ytkeywordtool.com](https://ytkeywordtool.com/), reframing 9:16 manual di [Reframe OS](https://reframe-os.netlify.app/), generate thumbnail di Google Flow, dan publikasi final. |
 | **Antigravity (Agy)** | Support Teknis Khusus | Digunakan **hanya jika** terjadi kendala teknis (debugging script, refactoring template, atau perbaikan environment), bukan sebagai eksekutor rutin harian. |
@@ -31,7 +31,7 @@ Setiap project baru dimulai dari **Terminal**, lalu dipandu langkah demi langkah
 [Tahap 1] Inisialisasi Sesi LLM Web (Kirim MASTER_PROMPT.md + nama project + URL YouTube)
        │
        ▼
-[Tahap 2] Pengambilan Transkrip (yt-dlp ke input/transcript.vtt / Whisper) ──> Upload ke chat LLM
+[Tahap 2] Pengambilan Transkrip (Copy-paste manual dari YouTube beserta timestamp ke chat LLM)
        │
        ▼
 [Tahap 3] Analisis Transkrip & Pemilihan Main Clip (3–5 opsi durasi 15–60s)
@@ -97,8 +97,7 @@ projects/<nama-project>/
 ├── PROJECT_STATE.md                    # Log progres, checkpoint, dan data sesi produksi
 ├── podcast-clip.json                   # Kontrak spesifikasi klip project ini
 ├── input/
-│   ├── transcript.vtt                  # Transkrip asli YouTube (yt-dlp)
-│   └── transcript.json                 # Transkrip normalized JSON (opsional)
+│   └── transcript.json                 # Transkrip normalized JSON (opsional, untuk captions)
 ├── working/
 │   ├── main-clip-landscape.mp4         # Unduhan potongan asli dari YouTube
 │   ├── main-clip-portrait.mp4          # Hasil reframing vertikal dari Reframe OS

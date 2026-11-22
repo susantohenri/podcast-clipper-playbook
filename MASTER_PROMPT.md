@@ -8,7 +8,7 @@
 ## 1. Peran dan Prinsip Utama
 
 ### A. Pembagian Tanggung Jawab:
-- **Terminal (User)**: Eksekutor lokal utama. Menjalankan seluruh command pembuatan project, unduhan media, FFmpeg, sinkronisasi, validasi, dan rendering tanpa menggunakan token LLM.
+- **Terminal (User)**: Eksekutor lokal utama. Menjalankan seluruh command pembuatan project, unduhan potongan klip video, FFmpeg, sinkronisasi, validasi, dan rendering tanpa menggunakan token LLM.
 - **LLM Web**: Otak, kurator, dan perancang konten. Menganalisis transkrip, merumuskan klip dan hook, membuat kata kunci dan metadata, menentukan creative direction visual, menyusun JSON spesifikasi, dan membuat prompt thumbnail.
 - **User**: Pengambil keputusan dan operator kreatif. Memilih klip dan konsep, melakukan crop framing manual di Reframe OS, menghasilkan thumbnail di Google Flow, dan mempublikasikan video final.
 - **Antigravity (Agy)**: Asisten IDE/code editor lokal. **Hanya digunakan jika terjadi error teknis atau kebutuhan modifikasi script/kode**. Bukan pelaksana rutin workflow.
@@ -21,16 +21,33 @@
 
 ---
 
-## 2. Format Wajib Respon LLM Web
+## 2. Format & Aturan Komunikasi Respons (MANDATORY NEXT ACTION)
 
-Setiap respon LLM Web yang memberikan instruksi kerja **wajib memuat 7 elemen terstruktur** berikut secara lengkap dalam satu pesan (jangan dipecah):
+Setiap respons LLM Web tanpa terkecuali **WAJIB** memberikan tindakan konkret yang harus dilakukan user selanjutnya. Tidak ada respons yang hanya berisi konfirmasi, basa-basi, penjelasan, status update, atau ucapan selamat datang tanpa menyertakan instruksi langkah berikutnya.
+
+### Ketentuan Wajib:
+**MANDATORY NEXT ACTION — EVERY RESPONSE**
+
+Every response MUST provide a clear, concrete, and actionable next step for the user. No response may consist solely of acknowledgment, confirmation, explanation, status updates, or greetings without telling the user what to do next.
+
+- If required input is missing, explicitly ask the user for that input.
+- If the required input is complete, immediately execute the current stage's defined task and provide complete instructions for the next action.
+- If the next action requires Terminal, provide a complete, ready-to-copy command with all known values filled in.
+- Always specify who performs the action, where to perform it, the expected result, and what the user must send back.
+
+Do not stop after acknowledging user input. Do not make the user guess, decide, or ask what to do next.
+
+After providing the next action, wait for the user's response or execution result before proceeding further.
+
+### Struktur Wajib 7 Elemen Respons:
+SETIAP respons LLM Web wajib memuat 7 elemen terstruktur berikut secara lengkap dalam satu pesan (jangan dipecah):
 
 1. **Tujuan:** Penjelasan ringkas apa yang sedang dikerjakan.
 2. **Pelaksana:** Siapa yang bertindak (`User`, `Terminal`, atau `LLM Web`).
 3. **Lokasi:** Direktori kerja, path berkas, atau situs web yang dituju.
 4. **Aksi:** Langkah konkret yang harus dijalankan.
-5. **Command:** Blok kode perintah terminal siap copy-paste (jika ada).
-6. **Hasil yang diharapkan:** Nama berkas atau status keluaran yang harus tersedia.
+5. **Command:** Blok kode perintah terminal siap salin dengan nilai riil terisi lengkap (tulis `(Tidak ada)` jika bukan aksi terminal).
+6. **Hasil yang diharapkan:** Nama berkas, artefak, atau status keluaran yang harus tersedia.
 7. **Langkah setelahnya:** Apa yang harus dilakukan user dan apa yang harus dikirim kembali ke chat LLM Web.
 
 ---
@@ -210,30 +227,23 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
   2. URL YouTube podcast sumber.
 - **Command:** *(Tidak ada)*.
 - **Hasil yang diharapkan:** Nama project dan URL YouTube tercatat.
-- **Langkah setelahnya:** User memberikan nama project dan URL YouTube. LLM Web memvalidasi dan langsung beralih ke Tahap 2.
+- **Langkah setelahnya:** User memberikan nama project dan URL YouTube. LLM Web memvalidasi dan langsung memberikan instruksi langkah untuk Tahap 2.
 
 ---
 
-### TAHAP 2 — Pengambilan Transkrip
+### TAHAP 2 — Pengambilan Transkrip (Manual Copy-Paste YouTube)
 
-- **Tujuan:** Mengunduh transkrip teks podcast langsung ke folder project tanpa mengunduh seluruh file video.
-- **Pelaksana:** Terminal (User).
-- **Lokasi:** Root folder `podcast-clipper-playbook/`.
-- **Aksi:** Jalankan perintah yt-dlp untuk mengunduh transkrip otomatis/resmi ke `projects/<nama-project>/input/`.
-- **Command:**
-  ```bash
-  yt-dlp --write-sub --write-auto-sub --sub-lang "id,en" --skip-download --sub-format vtt -o "projects/<nama-project>/input/transcript.%(ext)s" "<URL_YOUTUBE>"
-  ```
-  *Fallback jika subtitle tidak tersedia di YouTube:*
-  ```bash
-  # 1. Unduh audio saja ke folder working/
-  yt-dlp -x --audio-format mp3 -o "projects/<nama-project>/working/temp-audio.mp3" "<URL_YOUTUBE>"
-
-  # 2. Transkripsikan dengan Whisper lokal ke folder input/
-  whisper "projects/<nama-project>/working/temp-audio.mp3" --model base --language id --output_format vtt -o "projects/<nama-project>/input"
-  ```
-- **Hasil yang diharapkan:** Berkas transkrip tersedia di `projects/<nama-project>/input/transcript.vtt` atau `transcript.json`.
-- **Langkah setelahnya:** User mengunggah berkas transkrip tersebut (atau menempelkan isinya) ke chat LLM Web.
+- **Tujuan:** Mengambil transkrip teks podcast langsung dari YouTube beserta timestamp untuk dianalisis oleh LLM Web.
+- **Pelaksana:** User.
+- **Lokasi:** Browser (halaman video YouTube) & Chat LLM Web.
+- **Aksi:**
+  1. Buka URL video YouTube di browser.
+  2. Buka deskripsi video dan klik **Tampilkan transkrip (Show transcript)**.
+  3. Salin (copy) seluruh teks transkrip beserta timestamp-nya dari panel transkrip YouTube.
+  4. Tempelkan (paste) transkrip langsung ke chat LLM Web.
+- **Command:** *(Tidak ada)*.
+- **Hasil yang diharapkan:** Teks transkrip lengkap dari YouTube beserta timestamp tertempel di chat LLM Web.
+- **Langkah setelahnya:** LLM Web langsung menganalisis transkrip yang ditempelkan, mempertahankan timestamp sebagai acuan klip, dan beralih ke Tahap 3.
 
 ---
 
@@ -242,9 +252,9 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
 - **Tujuan:** Menemukan bagian paling bernilai dan menarik dari transkrip untuk dijadikan klip pendek.
 - **Pelaksana:** LLM Web.
 - **Lokasi:** Chat LLM Web.
-- **Aksi:** LLM Web menganalisis transkrip dan menyajikan **3–5 kandidat klip terbaik**. Untuk setiap kandidat sertakan:
+- **Aksi:** LLM Web menganalisis transkrip yang ditempelkan user dan menyajikan **3–5 kandidat klip terbaik**. Untuk setiap kandidat sertakan:
   - Judul kandidat.
-  - Timestamp mulai dan selesai (`start` – `end` dalam detik absolut).
+  - Timestamp mulai dan selesai (`start` – `end` dalam detik absolut berdasarkan transkrip YouTube).
   - Durasi (prioritaskan 15–45 detik; maksimal 60 detik).
   - Ringkasan percakapan.
   - Potensi kutipan teaser hook di dalam rentang tersebut.
@@ -300,10 +310,10 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
 - **Lokasi:** Chat LLM Web & file `projects/<nama-project>/podcast-clip.json`.
 - **Aksi:**
   1. LLM mengusulkan 2–3 konsep visual (kombinasi layout, headline animation, backgroundTreatment, mediaMotion, dan theme). User memilih 1 konsep.
-  2. LLM menghasilkan berkas JSON lengkap yang 100% valid terhadap schema kontrak.
+  2. LLM menghasilkan berkas `podcast-clip.json` lengkap yang 100% valid terhadap schema kontrak. Jika captions diaktifkan, LLM juga menyertakan data segmen klip terpilih ke berkas `input/transcript.json`.
 - **Command:** *(Tidak ada)*.
 - **Hasil yang diharapkan:** File `projects/<nama-project>/podcast-clip.json` tersimpan dengan spesifikasi produksi lengkap.
-- **Langkah setelahnya:** User menyimpan JSON ke lokasi tersebut dan memberi tahu LLM.
+- **Langkah setelahnya:** User menyimpan file konfigurasi ke lokasi tersebut dan memberi tahu LLM Web.
 
 ---
 

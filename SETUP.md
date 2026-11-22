@@ -15,9 +15,8 @@ Panduan lengkap instalasi, verifikasi dependensi sistem, dan pengoperasian toolk
 | **Node.js** | `>= 18.0.0` (disarankan LTS `>= 20.x`) | Runtime eksekusi script adapter (`sync.js`, `create-project.js`). |
 | **npm** | `>= 9.0.0` | Package runner untuk menjalankan `npx hyperframes`. |
 | **FFmpeg & ffprobe** | `>= 6.0` (lengkap dengan `libx264`, `aac`) | Ekstraksi durasi, pemotongan video, demuxing/remuxing audio, dan snapshot thumbnail. |
-| **yt-dlp** | Versi terbaru | Mengunduh subtitle (VTT/SRT), audio mentah, atau potongan klip YouTube. |
+| **yt-dlp** | Versi terbaru | Mengunduh potongan video podcast dari YouTube (format landscape). |
 | **HyperFrames CLI** | `0.8.208` | Engine rendering video headless berbasis Chromium & GSAP timeline. |
-| **Python** | `>= 3.10` *(opsional)* | Diperlukan jika video YouTube tidak memiliki subtitle dan harus ditranskripsi via Whisper. |
 | **Git** | `>= 2.30` | Version control untuk melacak perubahan template. |
 
 ---
@@ -33,7 +32,6 @@ ffmpeg -version
 ffprobe -version
 yt-dlp --version
 npx --yes hyperframes@0.8.208 --version
-python --version
 ```
 
 ### Kriteria Kesiapan:
@@ -62,27 +60,24 @@ winget install Gyan.FFmpeg
 
 # yt-dlp
 winget install yt-dlp.yt-dlp
-
-# Python
-winget install Python.Python.3.11
 ```
 
 *Alternatif menggunakan Chocolatey:*
 ```powershell
-choco install nodejs ffmpeg yt-dlp python
+choco install nodejs ffmpeg yt-dlp
 ```
 
 ### macOS (via Homebrew)
 
 ```bash
-brew install node ffmpeg yt-dlp python
+brew install node ffmpeg yt-dlp
 ```
 
 ### Linux (Ubuntu/Debian)
 
 ```bash
 sudo apt update
-sudo apt install -y nodejs npm ffmpeg python3 python3-pip
+sudo apt install -y nodejs npm ffmpeg
 # yt-dlp versi terbaru:
 sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
 sudo chmod a+rx /usr/local/bin/yt-dlp

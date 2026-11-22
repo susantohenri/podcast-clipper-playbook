@@ -172,7 +172,7 @@ if (config.captions?.enabled && config.captions?.mode !== 'off') {
       ? config.transcript.path
       : path.join(projectDir, config.transcript.path);
     if (!fs.existsSync(transcriptFullPath)) {
-      validationErrors.push(`File transcript tidak ditemukan: ${config.transcript.path} (dicari di: ${transcriptFullPath}). Selesaikan Tahap 2: download transkrip ke folder input/.`);
+      validationErrors.push(`File transcript tidak ditemukan: ${config.transcript.path} (dicari di: ${transcriptFullPath}). Pastikan file transcript tersedia atau nonaktifkan captions di podcast-clip.json.`);
     }
   }
 }

@@ -62,7 +62,7 @@ const initialStateContent = `# PROJECT STATE — ${sanitizedName}
 ## Checklist Progres
 
 - [x] Inisialisasi workspace project (\`create-project\`)
-- [ ] Unduh transkrip ke \`input/\`
+- [ ] Salin transkrip YouTube ke LLM Web
 - [ ] Analisis transkrip & pemilihan main clip
 - [ ] Penentuan hook, riset keyword, & metadata distribusi
 - [ ] Unduh potongan video landscape & reframing ke portrait (\`working/main-clip-portrait.mp4\`)
