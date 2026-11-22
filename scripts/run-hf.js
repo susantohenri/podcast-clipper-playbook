@@ -59,19 +59,22 @@ if (syncRes.status !== 0) {
   process.exit(syncRes.status || 1);
 }
 
-const hfArgs = ['--yes', 'hyperframes@0.8.208', action, '.'];
+const relHfDir = path.relative(rootDir, hfDir).replace(/\\/g, '/');
+const relOutput = path.relative(rootDir, outputVideo).replace(/\\/g, '/');
+
+const hfArgs = ['--yes', 'hyperframes@0.8.208', action, relHfDir];
 
 if (action === 'render') {
-  hfArgs.push('-o', '../output/final-video.mp4');
+  hfArgs.push('-o', relOutput);
 }
 
-console.log(`[run-hf] Menjalankan di folder hyperframes: npx ${hfArgs.join(' ')}`);
+console.log(`[run-hf] Menjalankan: npx ${hfArgs.join(' ')}`);
 
 const isWindows = process.platform === 'win32';
 const npxCmd = isWindows ? 'npx.cmd' : 'npx';
 
 const hfProc = spawnSync(npxCmd, hfArgs, {
-  cwd: hfDir,
+  cwd: rootDir,
   stdio: 'inherit',
   shell: true
 });

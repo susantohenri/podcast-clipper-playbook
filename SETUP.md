@@ -2,6 +2,10 @@
 
 Panduan lengkap instalasi, verifikasi dependensi sistem, dan pengoperasian toolkit podcast clipping.
 
+> [!NOTE]
+> Panduan ini hanya perlu dijalankan **satu kali** saat pertama kali menyiapkan sistem atau saat troubleshooting.
+> Alur kerja produksi project harian dimulai langsung di Terminal via `npm run create-project <nama-project>` dan tidak perlu mengulang setup atau konfirmasi environment di setiap sesi.
+
 ---
 
 ## 1. Daftar Tools yang Dibutuhkan

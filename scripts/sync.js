@@ -54,6 +54,7 @@ console.log(`[sync] Memproses project: ${path.relative(rootDir, projectDir) || p
 const configPath = path.join(projectDir, 'podcast-clip.json');
 if (!fs.existsSync(configPath)) {
   console.error(`[sync] Error: File konfigurasi tidak ditemukan di: ${configPath}`);
+  console.error(`       Selesaikan Tahap 6 di LLM Web dan simpan spesifikasi JSON ke file tersebut.`);
   process.exit(1);
 }
 
@@ -171,7 +172,7 @@ if (config.captions?.enabled && config.captions?.mode !== 'off') {
       ? config.transcript.path
       : path.join(projectDir, config.transcript.path);
     if (!fs.existsSync(transcriptFullPath)) {
-      validationErrors.push(`File transcript tidak ditemukan: ${config.transcript.path} (dicari di: ${transcriptFullPath})`);
+      validationErrors.push(`File transcript tidak ditemukan: ${config.transcript.path} (dicari di: ${transcriptFullPath}). Selesaikan Tahap 2: download transkrip ke folder input/.`);
     }
   }
 }
@@ -187,7 +188,7 @@ if (config.audio?.bgmSrc && config.audio.bgmSrc !== 'none') {
 // Main clip portrait check
 const mainPortraitPath = path.join(projectDir, 'working', 'main-clip-portrait.mp4');
 if (!skipMedia && !fs.existsSync(mainPortraitPath)) {
-  validationErrors.push(`File video Reframe OS belum tersedia: working/main-clip-portrait.mp4 (lokasi: ${mainPortraitPath})`);
+  validationErrors.push(`File video Reframe OS belum tersedia: working/main-clip-portrait.mp4 (dicari di: ${mainPortraitPath}). Selesaikan Tahap 5: download klip landscape dan reframe ke portrait via Reframe OS.`);
 }
 
 if (validationErrors.length > 0) {

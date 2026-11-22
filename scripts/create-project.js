@@ -9,9 +9,9 @@ const rootDir = path.resolve(__dirname, '..');
 const projectName = process.argv[2];
 
 if (!projectName) {
-  console.error('[create-project] Error: Nama project wajib disertakan.');
-  console.log('Penggunaan: node scripts/create-project.js <project-name>');
-  console.log('Contoh: node scripts/create-project.js episode-42-scaling');
+  console.error('\n[create-project] ❌ Error: Nama project wajib disertakan.');
+  console.log('Penggunaan: npm run create-project <nama-project>');
+  console.log('Contoh:     npm run create-project big-tech-is-facing-lawsuits\n');
   process.exit(1);
 }
 
@@ -19,12 +19,14 @@ if (!projectName) {
 const sanitizedName = projectName.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
 const projectDir = path.join(rootDir, 'projects', sanitizedName);
 
+// Prevent overwriting existing project
 if (fs.existsSync(projectDir)) {
-  console.error(`[create-project] Error: Folder project '${sanitizedName}' sudah ada di ${projectDir}`);
+  console.error(`\n[create-project] ❌ Error: Folder project '${sanitizedName}' sudah ada di:`);
+  console.error(`  ${projectDir}`);
+  console.error('Pencegahan: create-project tidak boleh menimpa project yang sudah ada.');
+  console.error('Solusi: Gunakan nama project lain atau lanjutkan workflow pada project tersebut.\n');
   process.exit(1);
 }
-
-console.log(`[create-project] Membuat project baru: ${sanitizedName}...`);
 
 // 1. Directory Structure
 const dirsToCreate = [
@@ -44,23 +46,55 @@ dirsToCreate.forEach(d => {
   fs.mkdirSync(d, { recursive: true });
 });
 
-// 2. Copy Templates
+// 2. Keep input/ and working/ clean with .gitkeep
+fs.writeFileSync(path.join(projectDir, 'input', '.gitkeep'), '', 'utf8');
+fs.writeFileSync(path.join(projectDir, 'working', '.gitkeep'), '', 'utf8');
+
+// 3. Initialize PROJECT_STATE.md
+const statePath = path.join(projectDir, 'PROJECT_STATE.md');
+const initialStateContent = `# PROJECT STATE — ${sanitizedName}
+
+- **Project Name:** ${sanitizedName}
+- **Created At:** ${new Date().toISOString()}
+- **Current Stage:** Tahap 1: Inisialisasi Sesi (Menunggu URL YouTube & Transkrip)
+- **Status:** In Progress
+
+## Checklist Progres
+
+- [x] Inisialisasi workspace project (\`create-project\`)
+- [ ] Unduh transkrip ke \`input/\`
+- [ ] Analisis transkrip & pemilihan main clip
+- [ ] Penentuan hook, riset keyword, & metadata distribusi
+- [ ] Unduh potongan video landscape & reframing ke portrait (\`working/main-clip-portrait.mp4\`)
+- [ ] Pembuatan spesifikasi editing (\`podcast-clip.json\`)
+- [ ] Validasi, sinkronisasi, & preview (\`npm run sync\`, \`npm run preview\`)
+- [ ] Render video final (\`output/final-video.mp4\`)
+- [ ] Ekstraksi screenshot detik ke-1 & pembuatan thumbnail (\`output/thumbnail.jpg\`)
+- [ ] Finalisasi metadata & publikasi manual
+
+## Data Produksi
+
+- **Source YouTube:** -
+- **Main Clip Timing:** -
+- **Hook Timing:** -
+- **Primary Keywords:** -
+- **Selected Concept:** -
+`;
+fs.writeFileSync(statePath, initialStateContent, 'utf8');
+
+// 4. Copy Templates
 const templatesDir = path.join(rootDir, 'templates');
 
-// podcast-clip.json
+// podcast-clip.json template
 const schemaExample = path.join(templatesDir, 'podcast-clip.example.json');
 const destConfig = path.join(projectDir, 'podcast-clip.json');
 if (fs.existsSync(schemaExample)) {
   const content = JSON.parse(fs.readFileSync(schemaExample, 'utf8'));
   content.project.name = sanitizedName;
+  content.source.youtubeUrl = '';
+  content.source.title = '';
+  content.source.channel = '';
   fs.writeFileSync(destConfig, JSON.stringify(content, null, 2) + '\n', 'utf8');
-}
-
-// input/transcript.json
-const transcriptExample = path.join(templatesDir, 'transcript.example.json');
-const destTranscript = path.join(projectDir, 'input', 'transcript.json');
-if (fs.existsSync(transcriptExample)) {
-  fs.copyFileSync(transcriptExample, destTranscript);
 }
 
 // hyperframes/hyperframes.json
@@ -77,7 +111,7 @@ if (fs.existsSync(hfIndex)) {
   fs.copyFileSync(hfIndex, destHfIndex);
 }
 
-// 3. Create metadata placeholders
+// 5. Create metadata placeholders
 const metadataFiles = [
   { name: 'youtube.md', title: 'YouTube Shorts Metadata' },
   { name: 'tiktok.md', title: 'TikTok Metadata' },
@@ -87,11 +121,11 @@ const metadataFiles = [
 
 metadataFiles.forEach(m => {
   const metaPath = path.join(projectDir, 'output', 'metadata', m.name);
-  const metaContent = `# ${m.title}\n\nProject: ${sanitizedName}\n\n## Content\n(Akan diisi otomatis oleh LLM Web pada Tahap 6 & 9)\n`;
+  const metaContent = `# ${m.title}\n\nProject: ${sanitizedName}\n\n## Content\n(Akan diisi otomatis oleh LLM Web pada Tahap 4 & 10)\n`;
   fs.writeFileSync(metaPath, metaContent, 'utf8');
 });
 
-// 4. Create directory junction for HyperFrames local asset server
+// 6. Create directory junction for HyperFrames local asset server
 const hfWorking = path.join(projectDir, 'hyperframes', 'working');
 const hfAssets = path.join(projectDir, 'hyperframes', 'assets');
 const targetWorking = path.join(projectDir, 'working');
@@ -107,12 +141,36 @@ try {
     fs.symlinkSync(targetAssets, hfAssets, symlinkType);
   }
 } catch (e) {
-  console.warn(`[create-project] Peringatan saat membuat tautan folder hyperframes: ${e.message}`);
+  // Junction might already exist
 }
 
-console.log(`[create-project] ✅ Project berhasil dibuat di:`);
-console.log(`  ${projectDir}`);
-console.log(`\nLangkah berikutnya:`);
-console.log(`  1. Masukkan file video Reframe OS ke: projects/${sanitizedName}/working/main-clip-portrait.mp4`);
-console.log(`  2. Sesuaikan konfigurasi di: projects/${sanitizedName}/podcast-clip.json`);
-console.log(`  3. Jalankan sinkronisasi: node scripts/sync.js projects/${sanitizedName}`);
+const masterPromptRelPath = 'MASTER_PROMPT.md';
+
+console.log(`
+==============================================================
+🎉 Project Berhasil Dibuat: ${sanitizedName}
+==============================================================
+
+📁 Lokasi Project:
+   projects/${sanitizedName}
+
+📄 File Master Prompt:
+   ${masterPromptRelPath}
+
+📋 File Pelacak Progres:
+   projects/${sanitizedName}/PROJECT_STATE.md
+
+🚀 Langkah Memulai Workflow:
+   1. Buka LLM Web pilihan Anda (Google AI Studio, ChatGPT, Claude).
+   2. Buka dan salin seluruh isi file: ${masterPromptRelPath}
+   3. Tempelkan isi ${masterPromptRelPath} ke chat LLM Web untuk memulai.
+   4. Berikan informasi awal berikut saat diminta oleh LLM Web:
+      - Nama Project : ${sanitizedName}
+      - URL YouTube  : (masukkan link YouTube podcast Anda)
+
+💡 Catatan Operasional:
+   - LLM Web akan memandu langkah demi langkah dan memberikan command siap salin.
+   - Jalankan setiap command langsung di Terminal ini.
+   - Seluruh file unduhan dan hasil kerja akan disimpan di projects/${sanitizedName}/
+==============================================================
+`);
