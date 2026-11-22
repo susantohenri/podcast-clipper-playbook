@@ -23,19 +23,20 @@ function assert(condition, testName, detail = '') {
 }
 
 // 1. Structure Verification
-console.log('1. Memeriksa Struktur Berkas Inti:');
+console.log('1. Memeriksa Struktur Berkas Inti Workspace:');
 assert(fs.existsSync(path.join(rootDir, 'package.json')), 'package.json tersedia');
 assert(fs.existsSync(path.join(rootDir, 'README.md')), 'README.md tersedia');
 assert(fs.existsSync(path.join(rootDir, 'SETUP.md')), 'SETUP.md tersedia');
 assert(fs.existsSync(path.join(rootDir, 'MASTER_PROMPT.md')), 'MASTER_PROMPT.md tersedia');
+assert(fs.existsSync(path.join(rootDir, 'podcast-clip.json')), 'podcast-clip.json tersedia di root');
 assert(fs.existsSync(path.join(rootDir, 'scripts', 'sync.js')), 'scripts/sync.js tersedia');
-assert(fs.existsSync(path.join(rootDir, 'scripts', 'create-project.js')), 'scripts/create-project.js tersedia');
 assert(fs.existsSync(path.join(rootDir, 'scripts', 'run-hf.js')), 'scripts/run-hf.js tersedia');
+assert(fs.existsSync(path.join(rootDir, 'scripts', 'clean.js')), 'scripts/clean.js tersedia');
+assert(fs.existsSync(path.join(rootDir, 'working')), 'Folder working/ tersedia di root');
+assert(fs.existsSync(path.join(rootDir, 'output')), 'Folder output/ tersedia di root');
+assert(fs.existsSync(path.join(rootDir, 'hyperframes', 'index.html')), 'hyperframes/index.html tersedia');
+assert(fs.existsSync(path.join(rootDir, 'hyperframes', 'hyperframes.json')), 'hyperframes/hyperframes.json tersedia');
 assert(fs.existsSync(path.join(rootDir, 'templates', 'podcast-clip.schema.json')), 'templates/podcast-clip.schema.json tersedia');
-assert(fs.existsSync(path.join(rootDir, 'templates', 'podcast-clip.example.json')), 'templates/podcast-clip.example.json tersedia');
-assert(fs.existsSync(path.join(rootDir, 'templates', 'transcript.example.json')), 'templates/transcript.example.json tersedia');
-assert(fs.existsSync(path.join(rootDir, 'templates', 'hyperframes', 'index.html')), 'templates/hyperframes/index.html tersedia');
-assert(fs.existsSync(path.join(rootDir, 'templates', 'hyperframes', 'hyperframes.json')), 'templates/hyperframes/hyperframes.json tersedia');
 
 // 2. Schema and Example Validation
 console.log('\n2. Memeriksa Validitas JSON Example terhadap Schema:');
@@ -53,121 +54,60 @@ const mainDur = example.clip.main.end - example.clip.main.start;
 assert(hookDur === 5, 'Perhitungan durasi hook valid (5s)');
 assert(mainDur === 35, 'Perhitungan durasi main valid (35s)');
 
-function removeProjectDir(dirPath) {
-  if (!fs.existsSync(dirPath)) return;
-  const hfDir = path.join(dirPath, 'hyperframes');
-  ['working', 'assets'].forEach(name => {
-    const junc = path.join(hfDir, name);
-    try {
-      if (process.platform === 'win32') {
-        execFileSync('cmd.exe', ['/c', 'rmdir', junc], { stdio: 'ignore' });
-      } else {
-        fs.unlinkSync(junc);
-      }
-    } catch (e) {}
-  });
-
-  let lastErr = null;
-  for (let attempt = 0; attempt < 10; attempt++) {
-    try {
-      fs.rmSync(dirPath, { recursive: true, force: true, maxRetries: 5, retryDelay: 500 });
-      if (!fs.existsSync(dirPath)) return;
-    } catch (e) {
-      lastErr = e;
-    }
-
-    if (process.platform === 'win32') {
-      try {
-        const res = spawnSync('powershell.exe', ['-NoProfile', '-Command', `Remove-Item -LiteralPath "${dirPath}" -Recurse -Force`], { encoding: 'utf8' });
-        if (!fs.existsSync(dirPath)) return;
-        if (res.stderr) lastErr = new Error(res.stderr);
-      } catch (e) {
-        lastErr = e;
-      }
-    }
-
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1000);
-  }
-  if (fs.existsSync(dirPath) && lastErr) {
-    console.error('  [removeProjectDir] Error details:', lastErr.message);
-  }
-}
-
-// 3. Test Project Scaffolding
-console.log('\n3. Menguji Scaffolding Project Baru & State Tracking:');
-const testProjectName = 'smoke-test-sample';
-const testProjectDir = path.join(rootDir, 'projects', testProjectName);
-
-removeProjectDir(testProjectDir);
-
+// 3. Test clean.js script
+console.log('\n3. Menguji Script Pembersihan (clean.js):');
 try {
-  const scaffoldOutput = execFileSync('node', ['scripts/create-project.js', testProjectName], {
-    cwd: rootDir,
-    encoding: 'utf8'
-  });
-  assert(fs.existsSync(testProjectDir), 'Folder project baru berhasil dibuat');
-  assert(fs.existsSync(path.join(testProjectDir, 'PROJECT_STATE.md')), 'PROJECT_STATE.md berhasil dibuat');
-  assert(fs.existsSync(path.join(testProjectDir, 'podcast-clip.json')), 'podcast-clip.json berhasil di-scaffold');
-  assert(fs.existsSync(path.join(testProjectDir, 'hyperframes', 'index.html')), 'hyperframes/index.html berhasil di-scaffold');
-  assert(fs.existsSync(path.join(testProjectDir, 'output', 'metadata', 'youtube.md')), 'Metadata output template tersedia');
-
-  // Check that input/ does NOT have dummy transcript
-  const inputDirFiles = fs.readdirSync(path.join(testProjectDir, 'input')).filter(f => f !== '.gitkeep');
-  assert(inputDirFiles.length === 0, 'Folder input/ bersih tanpa transcript palsu');
-
-  // Check that banner directs to LLM Web with MASTER_PROMPT.md
-  assert(scaffoldOutput.includes('MASTER_PROMPT.md'), 'Output create-project mengarahkan ke MASTER_PROMPT.md');
+  const cleanOutput = execFileSync('node', ['scripts/clean.js'], { cwd: rootDir, encoding: 'utf8' });
+  assert(cleanOutput.includes('Workspace berhasil dibersihkan'), 'scripts/clean.js berjalan normal');
+  assert(fs.existsSync(path.join(rootDir, 'output', 'metadata', 'youtube.md')), 'Metadata output placeholder tersedia');
 } catch (err) {
-  assert(false, 'Gagal menjalankan create-project.js', err.message);
+  assert(false, 'Gagal menjalankan clean.js', err.message);
 }
 
-// 4. Test Overwrite Protection
-console.log('\n4. Menguji Proteksi Penimpaan Project:');
+// 4. Test sync.js Error Handling on Missing Media
+console.log('\n4. Menguji Penanganan Error sync.js saat Media Belum Tersedia:');
 try {
-  const duplicateRun = spawnSync('node', ['scripts/create-project.js', testProjectName], {
-    cwd: rootDir,
-    encoding: 'utf8'
-  });
-  assert(duplicateRun.status !== 0, 'create-project menolak duplikasi nama project (exit non-zero)');
-  assert(duplicateRun.stderr.includes('sudah ada') || duplicateRun.stdout.includes('sudah ada'), 'Pesan error overwrite jelas');
-} catch (err) {
-  assert(false, 'Gagal menguji proteksi overwrite', err.message);
-}
-
-// 5. Test sync.js Error Handling on Incomplete Input
-console.log('\n5. Menguji Penanganan Error sync.js saat Media Belum Tersedia:');
-try {
-  const syncIncomplete = spawnSync('node', ['scripts/sync.js', testProjectDir], {
+  const syncIncomplete = spawnSync('node', ['scripts/sync.js'], {
     cwd: rootDir,
     encoding: 'utf8'
   });
   assert(syncIncomplete.status !== 0, 'sync.js menolak eksekusi saat video belum ada (exit non-zero)');
-  assert(syncIncomplete.stderr.includes('main-clip-portrait.mp4') || syncIncomplete.stdout.includes('main-clip-portrait.mp4'), 'Pesan error mengarahkan ke video portrait Tahap 5');
+  assert(syncIncomplete.stderr.includes('main-clip-portrait.mp4') || syncIncomplete.stdout.includes('main-clip-portrait.mp4'), 'Pesan error mengarahkan ke working/main-clip-portrait.mp4');
 } catch (err) {
   assert(false, 'Gagal menguji validasi sync.js', err.message);
 }
 
-// 6. Generate Synthetic Test Media (4s main, 1s hook)
-console.log('\n6. Menghasilkan Media Sintetis 1080x1920 untuk Pengujian Rendering:');
-const synthVideoPath = path.join(testProjectDir, 'working', 'main-clip-portrait.mp4');
+// 5. Generate Synthetic Test Media (4s main, 1s hook)
+console.log('\n5. Menghasilkan Media Sintetis 1080x1920 untuk Pengujian:');
+const synthVideoPath = path.join(rootDir, 'working', 'main-clip-portrait.mp4');
 
-// Copy sample transcript specifically for synthetic test
+// Copy sample transcript for captions test
 fs.copyFileSync(
   path.join(rootDir, 'templates', 'transcript.example.json'),
-  path.join(testProjectDir, 'input', 'transcript.json')
+  path.join(rootDir, 'input', 'transcript.json')
 );
 
-// Update test project JSON to 4s clip (hook: 1s, main: 4s)
-const testConfigPath = path.join(testProjectDir, 'podcast-clip.json');
-const testConfig = JSON.parse(fs.readFileSync(testConfigPath, 'utf8'));
-testConfig.clip.main.start = 0.0;
-testConfig.clip.main.end = 4.0;
-testConfig.clip.hook.start = 1.0;
-testConfig.clip.hook.end = 2.0;
-testConfig.audio.bgmSrc = 'none'; // disable external BGM for fast test
-testConfig.scenes.hook.soundDesign = []; // disable external sfx
-testConfig.scenes.main.soundDesign = [];
-fs.writeFileSync(testConfigPath, JSON.stringify(testConfig, null, 2) + '\n', 'utf8');
+// Update root podcast-clip.json for 4s clip (hook: 1s, main: 4s)
+const activeConfigPath = path.join(rootDir, 'podcast-clip.json');
+const activeConfig = JSON.parse(fs.readFileSync(activeConfigPath, 'utf8'));
+activeConfig.clip.main.start = 0.0;
+activeConfig.clip.main.end = 4.0;
+activeConfig.clip.hook.start = 1.0;
+activeConfig.clip.hook.end = 2.0;
+activeConfig.audio.bgmSrc = 'none'; // disable external BGM for fast test
+activeConfig.scenes.hook.soundDesign = []; // disable external sfx
+activeConfig.scenes.main.soundDesign = [];
+fs.writeFileSync(activeConfigPath, JSON.stringify(activeConfig, null, 2) + '\n', 'utf8');
+
+// Provide matching synthetic transcript for 0s - 4s test
+const testTranscriptPath = path.join(rootDir, 'input', 'transcript.json');
+fs.writeFileSync(testTranscriptPath, JSON.stringify({
+  language: 'id',
+  segments: [
+    { start: 0.5, end: 2.0, text: 'Halo selamat datang', speakerId: 'host' },
+    { start: 2.0, end: 3.8, text: 'di podcast testing', speakerId: 'guest' }
+  ]
+}, null, 2), 'utf8');
 
 try {
   execFileSync('ffmpeg', [
@@ -178,18 +118,18 @@ try {
     '-c:a', 'aac', '-b:a', '128k',
     synthVideoPath
   ], { stdio: 'pipe' });
-  assert(fs.existsSync(synthVideoPath), 'Video sintetis 1080x1920 4s berhasil dibuat');
+  assert(fs.existsSync(synthVideoPath), 'Video sintetis 1080x1920 4s berhasil dibuat di working/');
 } catch (err) {
   assert(false, 'Gagal membuat video sintetis dengan FFmpeg', err.message);
 }
 
-// 7. Test Adapter (sync.js) with Complete Media
-console.log('\n7. Menjalankan scripts/sync.js dengan Media Lengkap:');
+// 6. Test sync.js with Complete Media
+console.log('\n6. Menjalankan scripts/sync.js pada Root Workspace:');
 try {
-  execFileSync('node', ['scripts/sync.js', testProjectDir], { cwd: rootDir, stdio: 'inherit' });
-  const hookVideo = path.join(testProjectDir, 'working', 'hook-portrait.mp4');
-  const programAudio = path.join(testProjectDir, 'working', 'audio', 'program-audio.wav');
-  const scenesJs = path.join(testProjectDir, 'hyperframes', 'scenes.js');
+  execFileSync('node', ['scripts/sync.js'], { cwd: rootDir, stdio: 'inherit' });
+  const hookVideo = path.join(rootDir, 'working', 'hook-portrait.mp4');
+  const programAudio = path.join(rootDir, 'working', 'audio', 'program-audio.wav');
+  const scenesJs = path.join(rootDir, 'hyperframes', 'scenes.js');
 
   assert(fs.existsSync(hookVideo), 'working/hook-portrait.mp4 berhasil dibuat FFmpeg');
   assert(fs.existsSync(programAudio), 'working/audio/program-audio.wav berhasil digabungkan');
@@ -208,20 +148,20 @@ try {
   assert(false, 'Eksekusi sync.js gagal', err.message);
 }
 
-// 8. Test HyperFrames Check via scripts/run-hf.js
-console.log('\n8. Menjalankan Validasi HyperFrames (check):');
+// 7. Test HyperFrames Check via scripts/run-hf.js
+console.log('\n7. Menjalankan Validasi HyperFrames (check):');
 try {
-  execFileSync('node', ['scripts/run-hf.js', 'check', testProjectName], { cwd: rootDir, stdio: 'inherit' });
+  execFileSync('node', ['scripts/run-hf.js', 'check'], { cwd: rootDir, stdio: 'inherit' });
   assert(true, 'HyperFrames check lulus (0 lint errors, validasi DOM & GSAP OK)');
 } catch (err) {
   assert(false, 'HyperFrames check gagal', err.message);
 }
 
-// 9. Test HyperFrames Render via scripts/run-hf.js
-console.log('\n9. Menjalankan Render Video Final (MP4 1080x1920):');
-const finalVideoOutput = path.join(testProjectDir, 'output', 'final-video.mp4');
+// 8. Test HyperFrames Render via scripts/run-hf.js
+console.log('\n8. Menjalankan Render Video Final (MP4 1080x1920):');
+const finalVideoOutput = path.join(rootDir, 'output', 'final-video.mp4');
 try {
-  execFileSync('node', ['scripts/run-hf.js', 'render', testProjectName], { cwd: rootDir, stdio: 'inherit' });
+  execFileSync('node', ['scripts/run-hf.js', 'render'], { cwd: rootDir, stdio: 'inherit' });
   assert(fs.existsSync(finalVideoOutput), 'output/final-video.mp4 berhasil dirender');
 
   // Verify final video metadata with ffprobe
@@ -240,9 +180,9 @@ try {
   assert(false, 'Render video final gagal', err.message);
 }
 
-// 10. Test Thumbnail Reference Extraction at 1.0s
-console.log('\n10. Menguji Ekstraksi Thumbnail Reference pada Detik ke-1:');
-const thumbRefPath = path.join(testProjectDir, 'working', 'thumbnail-reference.jpg');
+// 9. Test Thumbnail Reference Extraction at 1.0s
+console.log('\n9. Menguji Ekstraksi Thumbnail Reference pada Detik ke-1:');
+const thumbRefPath = path.join(rootDir, 'working', 'thumbnail-reference.jpg');
 try {
   execFileSync('ffmpeg', [
     '-y',
@@ -257,18 +197,17 @@ try {
   assert(false, 'Ekstraksi frame detik ke-1 gagal', err.message);
 }
 
-// 11. Cleanup Test Project
-console.log('\n11. Pembersihan Workspace Pengujian:');
+// 10. Cleanup with clean.js
+console.log('\n10. Menguji Pembersihan Akhir dengan scripts/clean.js:');
 try {
-  removeProjectDir(testProjectDir);
-  assert(!fs.existsSync(testProjectDir), 'Folder smoke-test-sample berhasil dibersihkan');
+  execFileSync('node', ['scripts/clean.js'], { cwd: rootDir, stdio: 'inherit' });
+  assert(!fs.existsSync(synthVideoPath), 'working/main-clip-portrait.mp4 dibersihkan');
+  assert(!fs.existsSync(finalVideoOutput), 'output/final-video.mp4 dibersihkan');
+  assert(!fs.existsSync(thumbRefPath), 'working/thumbnail-reference.jpg dibersihkan');
+  assert(fs.existsSync(path.join(rootDir, 'podcast-clip.json')), 'podcast-clip.json di-reset');
 } catch (err) {
-  console.warn('  ⚠️ Gagal membersihkan folder uji coba:', err.message);
+  assert(false, 'Pembersihan akhir gagal', err.message);
 }
-
-// Confirm existing user project big-tech-is-facing-lawsuits remains intact
-const protectedProject = path.join(rootDir, 'projects', 'big-tech-is-facing-lawsuits');
-assert(fs.existsSync(protectedProject), 'Project user big-tech-is-facing-lawsuits tetap aman dan tidak tersentuh');
 
 console.log('\n====================================================');
 if (failedTests === 0) {

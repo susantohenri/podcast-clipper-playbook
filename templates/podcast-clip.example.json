@@ -108,26 +108,6 @@
       ]
     }
   },
-  "distribution": {
-    "youtubeShorts": {
-      "title": "Kesalahan Fatal Saat Scaling Bisnis! ⚠️ #Shorts",
-      "description": "Banyak founder terjebak scaling sebelum cashflow stabil. Dengarkan tips dari praktisi langsung di video ini.\n\n#bisnis #startup #entrepreneur",
-      "tags": ["bisnis", "startup", "investasi", "cashflow", "podcast"],
-      "hashtags": ["#shorts", "#bisnis", "#startup"]
-    },
-    "tiktok": {
-      "caption": "Founder startup wajib tonton ini sebelum buang duit buat scaling! 🚀",
-      "hashtags": ["#bisnis", "#startupindonesia", "#tipsbisnis"]
-    },
-    "instagramReels": {
-      "caption": "Kunci utama scaling bukan cuma marketing, tapi fundamental keuangan. Simak penjelasannya! 👇",
-      "hashtags": ["#reels", "#bisnisonline", "#edukasibisnis"]
-    },
-    "facebookReels": {
-      "caption": "Pelajaran berharga untuk semua pelaku usaha di era digital.",
-      "hashtags": ["#bisnis", "#wirausaha"]
-    }
-  },
   "thumbnail": {
     "referenceTimeSeconds": 1,
     "referenceImagePath": "working/thumbnail-reference.jpg",

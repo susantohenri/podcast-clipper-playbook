@@ -10,32 +10,18 @@ const rootDir = path.resolve(__dirname, '..');
 const action = process.argv[2] || 'check';
 const targetArg = process.argv[3];
 
-let projectDir = null;
+let projectDir = rootDir;
 if (targetArg) {
   if (fs.existsSync(targetArg) && fs.statSync(targetArg).isDirectory()) {
     projectDir = path.resolve(targetArg);
-  } else if (fs.existsSync(path.join(rootDir, 'projects', targetArg))) {
-    projectDir = path.join(rootDir, 'projects', targetArg);
-  }
-} else {
-  // Find newest in projects/
-  const projectsBase = path.join(rootDir, 'projects');
-  if (fs.existsSync(projectsBase)) {
-    const list = fs.readdirSync(projectsBase).filter(f => {
-      const full = path.join(projectsBase, f);
-      return fs.statSync(full).isDirectory() && fs.existsSync(path.join(full, 'podcast-clip.json'));
-    });
-    if (list.length > 0) {
-      list.sort((a, b) => {
-        return fs.statSync(path.join(projectsBase, b)).mtimeMs - fs.statSync(path.join(projectsBase, a)).mtimeMs;
-      });
-      projectDir = path.join(projectsBase, list[0]);
-    }
+  } else if (fs.existsSync(path.join(rootDir, targetArg))) {
+    projectDir = path.join(rootDir, targetArg);
   }
 }
 
-if (!projectDir) {
-  console.error('[run-hf] Error: Tidak menemukan project di folder projects/. Buat project dulu dengan: npm run create-project <nama>');
+const configPath = path.join(projectDir, 'podcast-clip.json');
+if (!fs.existsSync(configPath)) {
+  console.error(`[run-hf] Error: File podcast-clip.json tidak ditemukan di: ${configPath}`);
   process.exit(1);
 }
 
@@ -48,8 +34,9 @@ if (!fs.existsSync(hfDir)) {
 const outputVideo = path.join(projectDir, 'output', 'final-video.mp4');
 
 // Ensure sync is run first
-console.log(`[run-hf] Menjalankan sync untuk: ${path.basename(projectDir)}...`);
-const syncRes = spawnSync('node', ['scripts/sync.js', projectDir], {
+console.log(`[run-hf] Menjalankan sync...`);
+const syncArgs = projectDir === rootDir ? ['scripts/sync.js'] : ['scripts/sync.js', projectDir];
+const syncRes = spawnSync('node', syncArgs, {
   cwd: rootDir,
   stdio: 'inherit'
 });

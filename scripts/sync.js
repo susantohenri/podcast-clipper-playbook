@@ -8,48 +8,32 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
 // ==========================================
-// 1. Resolve Target Project Directory
+// 1. Resolve Target Workspace Directory
 // ==========================================
 const args = process.argv.slice(2);
 const skipMedia = args.includes('--skip-media') || args.includes('--validate-only');
 const cleanArgs = args.filter(a => !a.startsWith('--'));
 
-let projectDir = null;
+let projectDir = rootDir;
 if (cleanArgs.length > 0) {
   const target = cleanArgs[0];
   if (fs.existsSync(target) && fs.statSync(target).isDirectory()) {
     projectDir = path.resolve(target);
-  } else if (fs.existsSync(path.join(rootDir, 'projects', target))) {
-    projectDir = path.join(rootDir, 'projects', target);
   } else if (fs.existsSync(path.join(rootDir, target))) {
     projectDir = path.join(rootDir, target);
   }
 } else if (fs.existsSync(path.join(process.cwd(), 'podcast-clip.json'))) {
   projectDir = process.cwd();
-} else {
-  // Find newest project in projects/
-  const projectsBase = path.join(rootDir, 'projects');
-  if (fs.existsSync(projectsBase)) {
-    const list = fs.readdirSync(projectsBase).filter(f => {
-      const full = path.join(projectsBase, f);
-      return fs.statSync(full).isDirectory() && fs.existsSync(path.join(full, 'podcast-clip.json'));
-    });
-    if (list.length > 0) {
-      list.sort((a, b) => {
-        return fs.statSync(path.join(projectsBase, b)).mtimeMs - fs.statSync(path.join(projectsBase, a)).mtimeMs;
-      });
-      projectDir = path.join(projectsBase, list[0]);
-    }
-  }
 }
 
 if (!projectDir || !fs.existsSync(projectDir)) {
-  console.error('[sync] Error: Direktori project tidak ditemukan.');
-  console.error('Penggunaan: node scripts/sync.js [projects/<nama-project>]');
+  console.error('[sync] Error: Direktori workspace tidak ditemukan.');
+  console.error('Penggunaan: npm run sync');
   process.exit(1);
 }
 
-console.log(`[sync] Memproses project: ${path.relative(rootDir, projectDir) || projectDir}`);
+const isRoot = projectDir === rootDir;
+console.log(`[sync] Memproses workspace: ${isRoot ? '(root)' : path.relative(rootDir, projectDir) || projectDir}`);
 
 const configPath = path.join(projectDir, 'podcast-clip.json');
 if (!fs.existsSync(configPath)) {
@@ -156,7 +140,7 @@ if (config.captions) {
       } else {
         const fullSfxPath = path.isAbsolute(sfx.assetSrc) ? sfx.assetSrc : path.join(projectDir, sfx.assetSrc);
         if (!skipMedia && !fs.existsSync(fullSfxPath)) {
-          validationErrors.push(`File soundDesign tidak ditemukan: ${sfx.assetSrc} (dicari di: ${fullSfxPath})`);
+          console.warn(`[sync] ⚠️ File SFX tidak ditemukan: ${sfx.assetSrc} (dicari di: ${fullSfxPath}). SFX dilewati.`);
         }
       }
     });
@@ -177,11 +161,11 @@ if (config.captions?.enabled && config.captions?.mode !== 'off') {
   }
 }
 
-// BGM file check
+// BGM file check (opsional - non-blocking)
 if (config.audio?.bgmSrc && config.audio.bgmSrc !== 'none') {
   const fullBgm = path.isAbsolute(config.audio.bgmSrc) ? config.audio.bgmSrc : path.join(projectDir, config.audio.bgmSrc);
   if (!skipMedia && !fs.existsSync(fullBgm)) {
-    validationErrors.push(`File BGM tidak ditemukan: ${config.audio.bgmSrc} (dicari di: ${fullBgm})`);
+    console.warn(`[sync] ℹ️ File BGM tidak ditemukan: ${config.audio.bgmSrc} (dicari di: ${fullBgm}). Sinkronisasi berlanjut tanpa BGM.`);
   }
 }
 
@@ -327,6 +311,19 @@ const hookTranscript = sliceTranscriptForRange(rawTranscriptSegments, hookStart,
 const mainTranscript = sliceTranscriptForRange(rawTranscriptSegments, mainStart, mainEnd);
 
 console.log(`[sync] Transcript diproses: ${hookTranscript.length} segmen hook, ${mainTranscript.length} segmen main.`);
+
+if (config.captions?.enabled && config.captions?.mode !== 'off' && rawTranscriptSegments.length > 0 && mainTranscript.length === 0) {
+  const rawMin = Math.min(...rawTranscriptSegments.map(s => s.start));
+  const rawMax = Math.max(...rawTranscriptSegments.map(s => s.end));
+  console.error(`\n[sync] ❌ Error Sinkronisasi Subtitle:`);
+  console.error(`  Rentang klip di podcast-clip.json : [${mainStart}s – ${mainEnd}s]`);
+  console.error(`  Rentang waktu di ${config.transcript?.path || 'transcript'} : [${rawMin}s – ${rawMax}s]`);
+  console.error(`  Tidak ada segmen transkrip yang cocok dengan rentang klip!`);
+  console.error(`  Penyebab umum:`);
+  console.error(`  - Salah hitung menit ke detik (contoh: 44:36 adalah 2676s, bukan 44s).`);
+  console.error(`  - Salah mengambil segmen transkrip dari menit yang tidak sesuai klip.\n`);
+  process.exit(1);
+}
 
 // ==========================================
 // 4. Calculations & Offsets
@@ -491,11 +488,15 @@ if (fs.existsSync(indexPath)) {
 
   // Track 0: BGM (optional)
   if (config.audio?.bgmSrc && config.audio.bgmSrc !== 'none') {
-    const bgmVolume = config.audio.bgmVolume !== undefined ? config.audio.bgmVolume : 0.12;
-    // index.html accesses assets through symlink: assets/...
-    const hfBgmSrc = config.audio.bgmSrc.replace(/\\/g, '/');
-    audioElementsHtml += `\n        <audio id="bgm-audio" src="${hfBgmSrc}" data-start="0.00" data-duration="${finalDuration.toFixed(2)}" data-volume="${bgmVolume}" data-track-index="0"></audio>`;
-    console.log(`[sync] 🎵 BGM aktif: ${hfBgmSrc} (Vol: ${bgmVolume})`);
+    const fullBgm = path.isAbsolute(config.audio.bgmSrc) ? config.audio.bgmSrc : path.join(projectDir, config.audio.bgmSrc);
+    if (fs.existsSync(fullBgm)) {
+      const bgmVolume = config.audio.bgmVolume !== undefined ? config.audio.bgmVolume : 0.12;
+      const hfBgmSrc = config.audio.bgmSrc.replace(/\\/g, '/');
+      audioElementsHtml += `\n        <audio id="bgm-audio" src="${hfBgmSrc}" data-start="0.00" data-duration="${finalDuration.toFixed(2)}" data-volume="${bgmVolume}" data-track-index="0"></audio>`;
+      console.log(`[sync] 🎵 BGM aktif: ${hfBgmSrc} (Vol: ${bgmVolume})`);
+    } else {
+      console.log(`[sync] ℹ️ BGM dilewati (file ${config.audio.bgmSrc} tidak ditemukan).`);
+    }
   }
 
   // Track 1: Original Podcast Audio
@@ -506,10 +507,13 @@ if (fs.existsSync(indexPath)) {
   if (Array.isArray(config.scenes?.hook?.soundDesign)) {
     config.scenes.hook.soundDesign.forEach((sfx, i) => {
       if (sfx.assetSrc) {
-        const sfxStart = parseFloat(sfx.at) || 0;
-        const sfxVol = sfx.volume !== undefined ? sfx.volume : 0.4;
-        const sfxSrc = sfx.assetSrc.replace(/\\/g, '/');
-        audioElementsHtml += `\n        <audio id="hook-sfx-${i + 1}" src="${sfxSrc}" data-start="${sfxStart.toFixed(2)}" data-volume="${sfxVol}" data-track-index="2"></audio>`;
+        const fullSfxPath = path.isAbsolute(sfx.assetSrc) ? sfx.assetSrc : path.join(projectDir, sfx.assetSrc);
+        if (fs.existsSync(fullSfxPath)) {
+          const sfxStart = parseFloat(sfx.at) || 0;
+          const sfxVol = sfx.volume !== undefined ? sfx.volume : 0.4;
+          const sfxSrc = sfx.assetSrc.replace(/\\/g, '/');
+          audioElementsHtml += `\n        <audio id="hook-sfx-${i + 1}" src="${sfxSrc}" data-start="${sfxStart.toFixed(2)}" data-volume="${sfxVol}" data-track-index="2"></audio>`;
+        }
       }
     });
   }
@@ -517,10 +521,13 @@ if (fs.existsSync(indexPath)) {
   if (Array.isArray(config.scenes?.main?.soundDesign)) {
     config.scenes.main.soundDesign.forEach((sfx, i) => {
       if (sfx.assetSrc) {
-        const sfxStart = hookDuration + (parseFloat(sfx.at) || 0);
-        const sfxVol = sfx.volume !== undefined ? sfx.volume : 0.4;
-        const sfxSrc = sfx.assetSrc.replace(/\\/g, '/');
-        audioElementsHtml += `\n        <audio id="main-sfx-${i + 1}" src="${sfxSrc}" data-start="${sfxStart.toFixed(2)}" data-volume="${sfxVol}" data-track-index="2"></audio>`;
+        const fullSfxPath = path.isAbsolute(sfx.assetSrc) ? sfx.assetSrc : path.join(projectDir, sfx.assetSrc);
+        if (fs.existsSync(fullSfxPath)) {
+          const sfxStart = hookDuration + (parseFloat(sfx.at) || 0);
+          const sfxVol = sfx.volume !== undefined ? sfx.volume : 0.4;
+          const sfxSrc = sfx.assetSrc.replace(/\\/g, '/');
+          audioElementsHtml += `\n        <audio id="main-sfx-${i + 1}" src="${sfxSrc}" data-start="${sfxStart.toFixed(2)}" data-volume="${sfxVol}" data-track-index="2"></audio>`;
+        }
       }
     });
   }
@@ -559,5 +566,5 @@ console.log(`[sync] ✅ Runtime scenes.js berhasil ditulis: hyperframes/scenes.j
 console.log('\n[sync] Sinkronisasi selesai siap ditinjau:');
 console.log(`  - Validasi: LULUS`);
 console.log(`  - Durasi Total: ${finalDuration}s (Hook: ${hookDuration}s, Main: ${mainDuration}s)`);
-console.log(`  - Preview: npx hyperframes preview ${path.join(projectDir, 'hyperframes')}`);
-console.log(`  - Render:  npx hyperframes render ${path.join(projectDir, 'hyperframes')} -o ${path.join(projectDir, 'output', 'final-video.mp4')}`);
+console.log(`  - Preview: npm run preview`);
+console.log(`  - Render:  npm run render`);

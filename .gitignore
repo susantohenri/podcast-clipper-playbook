@@ -8,5 +8,24 @@ renders/
 *.mp3
 !templates/**
 !examples/**
+!assets/**
 .DS_Store
 Thumbs.db
+.codegraph/
+
+# HyperFrames generated runtime & junctions
+hyperframes/working
+hyperframes/assets
+hyperframes/scenes.js
+hyperframes/.hyperframes/
+
+# Working & output generated media (keep folders with .gitkeep)
+working/*
+!working/.gitkeep
+working/audio/*
+!working/audio/.gitkeep
+output/*
+!output/.gitkeep
+!output/metadata/
+output/metadata/*
+!output/metadata/*.md

@@ -4,7 +4,7 @@ Panduan lengkap instalasi, verifikasi dependensi sistem, dan pengoperasian toolk
 
 > [!NOTE]
 > Panduan ini hanya perlu dijalankan **satu kali** saat pertama kali menyiapkan sistem atau saat troubleshooting.
-> Alur kerja produksi project harian dimulai langsung di Terminal via `npm run create-project <nama-project>` dan tidak perlu mengulang setup atau konfirmasi environment di setiap sesi.
+> Alur kerja produksi harian berjalan langsung di root workspace tanpa perlu mengulang setup atau konfirmasi environment di setiap sesi.
 
 ---
 
@@ -12,7 +12,7 @@ Panduan lengkap instalasi, verifikasi dependensi sistem, dan pengoperasian toolk
 
 | Tool | Versi Minimum / Direkomendasikan | Fungsi dalam Workflow |
 | :--- | :--- | :--- |
-| **Node.js** | `>= 18.0.0` (disarankan LTS `>= 20.x`) | Runtime eksekusi script adapter (`sync.js`, `create-project.js`). |
+| **Node.js** | `>= 18.0.0` (disarankan LTS `>= 20.x`) | Runtime eksekusi script adapter (`sync.js`, `clean.js`). |
 | **npm** | `>= 9.0.0` | Package runner untuk menjalankan `npx hyperframes`. |
 | **FFmpeg & ffprobe** | `>= 6.0` (lengkap dengan `libx264`, `aac`) | Ekstraksi durasi, pemotongan video, demuxing/remuxing audio, dan snapshot thumbnail. |
 | **yt-dlp** | Versi terbaru | Mengunduh potongan video podcast dari YouTube (format landscape). |
@@ -104,7 +104,7 @@ Saat pertama kali dijalankan, `npx` akan mengunduh paket binary HyperFrames ke c
 Sebelum melakukan preview atau rendering, selalu jalankan sinkronisasi untuk memotong video teaser hook dan menyusun audio:
 
 ```bash
-npm run sync projects/<nama-project>
+npm run sync
 ```
 
 ### B. Validasi Kode & Linting HyperFrames (`check`)
@@ -112,13 +112,7 @@ npm run sync projects/<nama-project>
 Memeriksa integritas komposisi HTML, CSS, DOM hierarchy, timeline GSAP, dan asset:
 
 ```bash
-npm run check projects/<nama-project>
-```
-
-Atau langsung dari folder hyperframes project:
-```bash
-cd projects/<nama-project>/hyperframes
-npx --yes hyperframes@0.8.208 check .
+npm run check
 ```
 
 ### C. Live Studio Preview (`preview`)
@@ -126,13 +120,7 @@ npx --yes hyperframes@0.8.208 check .
 Membuka antarmuka preview interaktif di browser lokal:
 
 ```bash
-npm run preview projects/<nama-project>
-```
-
-Atau langsung dari folder hyperframes project:
-```bash
-cd projects/<nama-project>/hyperframes
-npx --yes hyperframes@0.8.208 preview .
+npm run preview
 ```
 
 ### D. Render Video Final (`render`)
@@ -140,11 +128,19 @@ npx --yes hyperframes@0.8.208 preview .
 Merender video final beresolusi portrait 1080x1920 30fps H.264:
 
 ```bash
-npm run render projects/<nama-project>
+npm run render
 ```
 
 Hasil render disimpan otomatis di:
-`projects/<nama-project>/output/final-video.mp4`
+`output/final-video.mp4`
+
+### E. Bersihkan Workspace untuk Video Baru (`clean`)
+
+Mengosongkan folder media kerja dan output saat ingin memproses klip baru:
+
+```bash
+npm run clean
+```
 
 ---
 
