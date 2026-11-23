@@ -40,7 +40,7 @@ Sesi produksi dipandu langkah demi langkah oleh **Gemini Web** menggunakan [`MAS
 [Tahap 5] Creative Direction Visual & Simpan podcast-clip.json + input/transcript.json
        │
        ▼
-[Tahap 6] Sinkronisasi & Validasi (npm run sync) ──> Review (npm run preview)
+[Tahap 6] One-Command Pipeline (npm run dev: Transcribe ──> Sync ──> Live Preview)
        │
        ▼
 [Tahap 7] Render Final Video (npm run render) ──> Ekstraksi Screenshot Detik ke-1
@@ -112,7 +112,11 @@ podcast-clipper-playbook/
 ### 2. Jalankan Perintah Terminal Saat Diinstruksikan
 Semua perintah terminal sangat pendek dan tidak membutuhkan parameter nama folder:
 
-- **Sinkronisasi media & audio:**
+- **Transcribe, sync & live preview (one-command):**
+  ```bash
+  npm run dev
+  ```
+- **Sinkronisasi manual (tanpa transkrip ulang):**
   ```bash
   npm run sync
   ```

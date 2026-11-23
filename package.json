@@ -5,7 +5,10 @@
   "type": "module",
   "description": "Production playbook and template for podcast video clipping using LLM Web, Antigravity, FFmpeg, Reframe OS, and HyperFrames",
   "scripts": {
+    "dev": "node scripts/transcribe.js && node scripts/sync.js && node scripts/run-hf.js preview",
     "sync": "node scripts/sync.js",
+    "get-transcript": "node scripts/get-transcript.js",
+    "transcribe": "node scripts/transcribe.js",
     "check": "node scripts/run-hf.js check",
     "preview": "node scripts/run-hf.js preview",
     "render": "node scripts/run-hf.js render",

@@ -156,7 +156,18 @@ if (config.captions?.enabled && config.captions?.mode !== 'off') {
       ? config.transcript.path
       : path.join(projectDir, config.transcript.path);
     if (!fs.existsSync(transcriptFullPath)) {
-      validationErrors.push(`File transcript tidak ditemukan: ${config.transcript.path} (dicari di: ${transcriptFullPath}). Pastikan file transcript tersedia atau nonaktifkan captions di podcast-clip.json.`);
+      const portraitPath = path.join(projectDir, 'working', 'main-clip-portrait.mp4');
+      if (fs.existsSync(portraitPath) && !skipMedia) {
+        console.log(`[sync] ℹ️ File transcript tidak ditemukan. Menjalankan auto-transcribe dari video...`);
+        try {
+          execFileSync('node', [path.join(__dirname, 'transcribe.js')], { stdio: 'inherit', cwd: projectDir });
+        } catch (e) {
+          validationErrors.push(`Auto-transcribe gagal: ${e.message}`);
+        }
+      }
+      if (!fs.existsSync(transcriptFullPath)) {
+        validationErrors.push(`File transcript tidak ditemukan: ${config.transcript.path} (dicari di: ${transcriptFullPath}). Pastikan file transcript tersedia atau jalankan 'npm run transcribe'.`);
+      }
     }
   }
 }
@@ -312,6 +323,21 @@ const mainTranscript = sliceTranscriptForRange(rawTranscriptSegments, mainStart,
 
 console.log(`[sync] Transcript diproses: ${hookTranscript.length} segmen hook, ${mainTranscript.length} segmen main.`);
 
+if (hookTranscript.length > 0) {
+  const hookSpokenText = hookTranscript.map(s => s.text).join(' ').trim();
+  console.log(`[sync] 🎯 Teks terpotong pada Hook [${hookStart}s – ${hookEnd}s]:`);
+  console.log(`       "${hookSpokenText}"`);
+
+  // Hook word cut check: apakah hookStart memotong tengah segmen kata?
+  const rawFirst = rawTranscriptSegments.find(s => s.end > hookStart && s.start <= hookStart);
+  if (rawFirst && (hookStart - rawFirst.start) > 0.3) {
+    console.warn(`[sync] ⚠️ Peringatan Titik Hook: hook.start (${hookStart}s) memotong tengah kata ("${rawFirst.text}").`);
+    console.warn(`       Disarankan sesuaikan 'clip.hook.start' ke ${rawFirst.start}s agar suku kata pertama tidak hilang.`);
+  }
+} else if (rawTranscriptSegments.length > 0) {
+  console.warn(`[sync] ⚠️ Peringatan: Tidak ada teks transkrip di rentang hook [${hookStart}s – ${hookEnd}s]. Cek kembali timing hook!`);
+}
+
 if (config.captions?.enabled && config.captions?.mode !== 'off' && rawTranscriptSegments.length > 0 && mainTranscript.length === 0) {
   const rawMin = Math.min(...rawTranscriptSegments.map(s => s.start));
   const rawMax = Math.max(...rawTranscriptSegments.map(s => s.end));
@@ -331,6 +357,43 @@ if (config.captions?.enabled && config.captions?.mode !== 'off' && rawTranscript
 const hookDuration = Math.round((hookEnd - hookStart) * 100) / 100;
 const mainDuration = Math.round((mainEnd - mainStart) * 100) / 100;
 const finalDuration = Math.round((hookDuration + mainDuration) * 100) / 100;
+
+// Subtitle Quality & Drift Safeguards
+if (mainTranscript.length > 0 && mainDuration > 0) {
+  // 1. Check Speaking Rate (Audio Gaps Detector)
+  const totalWords = mainTranscript.reduce((acc, s) => acc + (s.text ? s.text.trim().split(/\s+/).length : 0), 0);
+  const wordsPerSec = Math.round((totalWords / mainDuration) * 10) / 10;
+  if (wordsPerSec < 1.7) {
+    console.warn(`[sync] ⚠️ Peringatan Laju Kata Rendah: ${wordsPerSec} kata/detik (${totalWords} kata dalam ${mainDuration}s).`);
+    console.warn(`       Rata-rata podcast 2.0 – 3.5 kata/detik. Waspada ada bagian obrolan terlewat/hilang di transkrip!`);
+  }
+
+  // 2. Uniform Duration Check (Linear Guessing / Drift Detector)
+  const durations = mainTranscript.map(s => Math.round((s.end - s.start) * 10) / 10);
+  const counts = {};
+  durations.forEach(d => { counts[d] = (counts[d] || 0) + 1; });
+  const maxFreq = Math.max(...Object.values(counts));
+  const uniformRatio = maxFreq / durations.length;
+  if (durations.length >= 8 && uniformRatio > 0.65) {
+    const dominant = Object.keys(counts).find(k => counts[k] === maxFreq);
+    console.warn(`[sync] ⚠️ Peringatan Estimasi Seragam: ${Math.round(uniformRatio * 100)}% segmen berdurasi identik (~${dominant}s).`);
+    console.warn(`       Timestamp terindikasi tebakan linier/buatan, bukan tempo bicara asli. Risiko desync parah!`);
+  }
+
+  // 3. Checkpoint Subtitle Main Clip Echo (Ear-Check)
+  if (mainTranscript.length >= 3) {
+    const tStart = mainTranscript[0];
+    const midTarget = mainStart + mainDuration * 0.5;
+    const tMid = mainTranscript.reduce((prev, curr) => Math.abs(curr.start - midTarget) < Math.abs(prev.start - midTarget) ? curr : prev);
+    const endTarget = mainStart + mainDuration * 0.9;
+    const tEnd = mainTranscript.reduce((prev, curr) => Math.abs(curr.start - endTarget) < Math.abs(prev.start - endTarget) ? curr : prev);
+
+    console.log(`[sync] 🔍 Checkpoint Subtitle Main Clip (Verifikasi telinga di video):`);
+    console.log(`       - Awal   (0.0s / ${tStart.start}s): "${tStart.text}"`);
+    console.log(`       - Tengah (${Math.round(tMid.relStart)}s / ${tMid.start}s): "${tMid.text}"`);
+    console.log(`       - Akhir  (${Math.round(tEnd.relStart)}s / ${tEnd.end}s): "${tEnd.text}"`);
+  }
+}
 
 const hookStartOffset = Math.round((hookStart - mainStart) * 100) / 100;
 

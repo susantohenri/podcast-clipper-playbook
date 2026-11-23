@@ -198,13 +198,19 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
 ### TAHAP 1 — Inisialisasi Sesi & Penerimaan URL YouTube
 
 - **Tujuan:** Memulai sesi produksi klip podcast di workspace aktif.
-- **Pelaksana:** Gemini Web dan User.
-- **Lokasi:** Chat Gemini Web.
-- **Aksi:** Gemini Web menyambut User dan meminta 1 informasi awal:
+- **Pelaksana:** LLM dan User.
+- **Lokasi:** Chat LLM.
+- **Aksi:** LLM menyambut User dan meminta 1 informasi awal:
   - URL YouTube video podcast sumber.
 - **Command:** *(Tidak ada)*.
 - **Hasil yang diharapkan:** URL YouTube tercatat dan tervalidasi.
-- **Langkah setelahnya:** Setelah menerima URL YouTube, Gemini Web memanfaatkan kemampuan native YouTube grounding untuk langsung membaca dan menganalisis video (audio, transkrip, dan visual) dari tautan tersebut tanpa meminta User meng-copy-paste transkrip secara manual. Gemini Web langsung menyajikan 3–5 kandidat klip terbaik untuk Tahap 2.
+- **Langkah setelahnya (Percabangan Akses YouTube):**
+  - **Jika LLM memiliki integrasi native YouTube (seperti Gemini Web):** Langsung baca dan analisis video dari tautan tersebut tanpa meminta User meng-copy-paste transkrip secara manual. Langsung sajikan 3–5 kandidat klip terbaik untuk Tahap 2.
+  - **Jika LLM tidak dapat membuka link YouTube langsung (seperti Claude, ChatGPT, DeepSeek):** LLM wajib menginstruksikan User untuk menjalankan perintah berikut di Terminal:
+    ```bash
+    npm run get-transcript "<URL_YOUTUBE>"
+    ```
+    lalu meminta User menempelkan isi berkas `input/macro-transcript.txt` ke chat agar LLM dapat menganalisis dan menyajikan kandidat klip.
 
 ---
 
@@ -233,11 +239,16 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
 - **Lokasi:** Chat Gemini Web & browser (https://ytkeywordtool.com/).
 - **Aksi:**
   1. Gemini Web mengusulkan 2–3 pilihan teaser hook 3–6 detik yang **berasal dari dalam main clip**, serta memberikan 2–4 seed keywords.
-  2. **ATURAN WAJIB KURASI HOOK (CONTEXT-FREE ACID TEST):**
-     Gemini Web WAJIB menguji setiap pilihan hook dengan 2 filter eliminasi scroll-stopper sebelum menampilkannya:
+  2. **ATURAN WAJIB KURASI HOOK (CONTEXT-FREE & TIMING GROUNDING):**
+     Gemini Web WAJIB menguji setiap pilihan hook dengan 2 filter eliminasi scroll-stopper dan 1 aturan mutlak timing:
      - **Filter 1: Uji Mandiri (Stand-Alone Test):** Kalimat wajib langsung masuk akal dan memancing rasa penasaran audiens asing di feed tanpa membaca judul video atau tahu isi podcast. DILARANG memilih kalimat syarat/kualifikasi teknis jika masalah intinya belum disebut.
      - **Filter 2: Uji Penasaran (Curiosity Gap Test):** Wajib mengandung kontras, ancaman, kerugian, uang, rahasia, atau emosi tajam (bukan data statistik dingin).
      - **Aturan Ranking:** Hook dengan skor scroll-stopper mandiri tertinggi WAJIB ditempatkan di ranking #1.
+     - **Aturan Mutlak Timing Grounding (Anti-Tebak Waktu & Anti-Potong Kata):**
+       - DILARANG KERAS mengira-ngira atau menaksir timestamp hook.
+       - Nilai hook.start dan hook.end WAJIB disalin persis dari baris transkrip riil yang memuat kata pertama dan kata terakhir dari kalimat kutipan tersebut.
+       - **Aturan Buffer Awal Hook:** Nilai hook.start disarankan diberi buffer mundur **-0.3s s/d -0.5s** sebelum kata pertama diucapkan agar suku kata pembuka tidak terpotong saat rendering audio dan video.
+       - Setiap opsi hook wajib menampilkan: teks kutipan, timestamp awal-akhir (format detik absolut dan MM:SS), serta kutipan teks transkrip aslinya di chat agar User bisa memverifikasi langsung.
   3. Gemini Web memandu User membuka https://ytkeywordtool.com/ untuk mengecek volume pencarian serta kata kunci turunan.
   4. User memilih 1 hook dan menempelkan teks hasil riset keyword ke chat Gemini Web.
   5. Gemini Web mencatat hook terpilih dan kata kunci utama (disimpan dalam sesi untuk perumusan metadata distribusi pada Tahap 8).
@@ -270,75 +281,49 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
 
 ### TAHAP 5 — Creative Direction Visual & Penyusunan Spesifikasi JSON
 
-- **Tujuan:** Menentukan gaya visual dan menghasilkan berkas spesifikasi `podcast-clip.json` serta `input/transcript.json`.
-- **Pelaksana:** Gemini Web dan User.
-- **Lokasi:** Chat Gemini Web, berkas `podcast-clip.json`, dan `input/transcript.json`.
+- **Tujuan:** Menentukan gaya visual dan menghasilkan berkas spesifikasi `podcast-clip.json`.
+- **Pelaksana:** LLM dan User.
+- **Lokasi:** Chat LLM dan berkas `podcast-clip.json`.
 - **Aksi:**
-  1. Gemini Web mengusulkan 2–3 konsep visual dengan memadukan whitelist enum yang sah. Gunakan inspirasi resep preset berikut:
+  1. LLM mengusulkan 2–3 konsep visual dengan memadukan whitelist enum yang sah. Gunakan inspirasi resep preset berikut:
      - **Gaya 1: Dark Investigative / Misteri** (`layout`: "full-bleed", `backgroundTreatment`: "noise-texture", `mediaMotion`: "handheld-drift", `animation`: "blur-reveal", `fontMood`: "heavy-condensed").
      - **Gaya 2: High Energy / Viral** (`layout`: "blurred-backdrop", `mediaTreatment`: "rounded-card", `backgroundTreatment`: "radial-glow", `mediaMotion`: "shake-on-impact", `animation`: "slam", `fontMood`: "bold-geometric").
      - **Gaya 3: Minimalist Modern** (`layout`: "full-bleed", `backgroundTreatment`: "gradient", `mediaMotion`: "slow-zoom-in", `animation`: "pop", `fontMood`: "default").
      User memilih 1 konsep visual.
-  2. Setelah konsep dipilih, Gemini Web merumuskan berkas `podcast-clip.json` lengkap yang 100% valid terhadap schema kontrak.
-  3. **ATURAN MUTLAK SUBTITLE CHUNKING (`input/transcript.json`):**
-     Jika captions aktif (`captions.enabled: true`), Gemini Web WAJIB memformat dan memecah transkrip klip terpilih ke dalam berkas `input/transcript.json` dengan aturan ketat:
-     - **Maksimal 3–5 Kata per Objek Segmen:** Renderer HyperFrames menampilkan 1 objek segment sekaligus di layar. DILARANG KERAS menaruh kalimat panjang (> 5 kata) dalam satu objek segment agar teks subtitle tidak menumpuk di layar!
-     - **Estimasi Durasi Realistis:** Bagi timestamp `start` dan `end` per objek segmen menjadi durasi 1.0 – 2.5 detik per baris sesuai tempo bicara asli.
-     - **Wajib Verbatim (Tanpa Parafrase):** Teks kata per kata disalin persis dari percakapan asli di YouTube tanpa memparafrase, merangkum, atau mengarang kata baru.
-     - **Rentang Timing Sinkron:** Seluruh timestamp di `input/transcript.json` wajib berada di dalam rentang `[clip.main.start, clip.main.end]`.
-     - **Contoh Struktur Wajib `input/transcript.json`:**
-       ```json
-       {
-         "language": "id",
-         "segments": [
-           {
-             "start": 856.0,
-             "end": 857.8,
-             "text": "Banyak founder baru",
-             "speakerId": "host"
-           },
-           {
-             "start": 857.8,
-             "end": 859.5,
-             "text": "yang terjebak di awal.",
-             "speakerId": "host"
-           }
-         ]
-       }
-       ```
-  4. Gemini Web memberikan panduan operasional kepada User untuk menyalin dan menyimpan kedua berkas:
-     - Salin blok spesifikasi ke `podcast-clip.json`.
-     - Salin blok transkrip segmen ke `input/transcript.json`.
+  2. Setelah konsep dipilih, LLM merumuskan berkas `podcast-clip.json` lengkap yang 100% valid terhadap schema kontrak.
+  3. **ATURAN MUTLAK SUBTITLE (OTOMASI DETERMINISTIK SKRIP):**
+     LLM DILARANG KERAS menyusun atau mengarang berkas `input/transcript.json` secara manual di chat! Pekerjaan timestamp mikro dan pemotongan subtitle 100% diotomatisasi secara presisi oleh skrip lokal (`npm run dev`) langsung dari suara video `working/main-clip-portrait.mp4`.
+  4. LLM memberikan panduan operasional kepada User untuk menyalin blok spesifikasi ke `podcast-clip.json`.
 - **Command:** *(Tidak ada)*.
-- **Hasil yang diharapkan:** Berkas `podcast-clip.json` dan `input/transcript.json` tersimpan dengan data spesifikasi riil dan valid.
-- **Langkah setelahnya:** Gemini Web wajib menginstruksikan User untuk memastikan kedua file tersimpan dan mengonfirmasi penyelesaian simpan di chat. Gemini Web tidak boleh mengeluarkan command sinkronisasi atau preview sebelum User mengonfirmasi penyimpanan file tersebut.
+- **Hasil yang diharapkan:** Berkas `podcast-clip.json` tersimpan dengan data spesifikasi riil dan valid.
+- **Langkah setelahnya:** LLM wajib menginstruksikan User untuk memastikan file tersimpan dan mengonfirmasi penyelesaian simpan di chat, lalu melanjutkan ke Tahap 6 untuk sinkronisasi otomatis dan preview.
 
 ---
 
-### TAHAP 6 — Sinkronisasi, Validasi, & Review Preview
+### TAHAP 6 — One-Command Pipeline: Transcribe, Sync, & Live Preview (`npm run dev`)
 
-- **Tujuan:** Memotong video hook, menyusun audio multi-track, validasi komposisi, dan melihat preview sebelum render.
+- **Tujuan:** Transkripsi audio lokal otomatis (Whisper), pemotongan hook, perakitan audio multi-track, validasi komposisi, dan live preview dalam 1 perintah tunggal.
 - **Pelaksana:** Terminal (User).
 - **Lokasi:** Root folder `podcast-clipper-playbook/` & browser lokal.
 - **Aksi:**
-  1. Gemini Web memberikan perintah terminal siap salin untuk sinkronisasi dan preview:
+  1. Gemini Web memberikan 1 perintah terminal tunggal siap salin:
      ```bash
-     npm run sync
-     npm run preview
+     npm run dev
      ```
-  2. User menjalankan `npm run sync` di Terminal untuk memvalidasi konfigurasi, memotong klip hook, dan menyusun audio program otomatis.
-  3. User menjalankan `npm run preview` untuk membuka live preview HyperFrames di browser.
-  4. Gemini Web memandu User mengevaluasi preview secara operasional:
+  2. User menjalankan `npm run dev` di Terminal. Perintah ini otomatis menjalankan 3 tahap berurutan tanpa jeda manual:
+     - **Transcribe**: Mengekstrak audio video dan membuat subtitle presisi kata-demi-kata via Whisper AI lokal (`input/transcript.json`) sesuai offset `clip.main.start`.
+     - **Sync**: Memvalidasi konfigurasi, memotong video hook (`working/hook-portrait.mp4`), menyusun audio program multi-track (`working/audio/program-audio.wav`), dan mengecap kode runtime HyperFrames.
+     - **Preview**: Membuka live interactive preview HyperFrames di browser.
+  3. Gemini Web memandu User mengevaluasi preview secara operasional:
      - Keselarasan karaoke caption dan audio.
      - Kehalusan transisi dari hook ke main clip.
      - Keseimbangan volume voice over dan background music.
 - **Command:**
   ```bash
-  npm run sync
-  npm run preview
+  npm run dev
   ```
 - **Hasil yang diharapkan:**
-  - Berkas `working/hook-portrait.mp4` dan `working/audio/program-audio.wav` berhasil dibuat FFmpeg.
+  - Berkas `input/transcript.json`, `working/hook-portrait.mp4`, dan `working/audio/program-audio.wav` berhasil dibuat otomatis.
   - Preview interaktif HyperFrames terbuka di browser tanpa pesan error linting.
 - **Langkah setelahnya:** Gemini Web wajib menginstruksikan User untuk melaporkan hasil review preview: jika ada revisi teks atau timing, minta perubahan spesifik untuk diperbaiki di `podcast-clip.json`; jika komposisi sudah memuaskan, User menyatakan persetujuan render di chat agar Gemini Web memberikan command render untuk Tahap 7.
 
