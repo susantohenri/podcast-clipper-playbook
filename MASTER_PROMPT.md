@@ -127,37 +127,78 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
       "layout": "blurred-backdrop",
       "mediaTreatment": "rounded-card",
       "mediaMotion": "shake-on-impact",
+      "textSize": "xl",
       "textTreatment": {
         "fontMood": "heavy-condensed",
-        "decoration": "hard-shadow"
+        "decoration": "thick-outline"
       },
-      "emphasisEffect": "scale-emphasis",
+      "emphasisEffect": "spotlight",
       "transitionIn": "cut",
-      "transitionOut": "crossfade",
-      "backgroundTreatment": "vignette",
-      "badge": "HOOK",
+      "transitionOut": "whip-pan",
+      "backgroundTreatment": "radial-glow",
+      "badge": "HOT TAKE 🔥",
       "headline": "Headline Teaser Hook",
       "highlightWords": ["KataKunci"],
       "animation": "slam",
-      "soundDesign": []
+      "textTransitionOut": "glitch-out",
+      "overlayElements": ["speed-lines", "warning-stripes"],
+      "stickers": [
+        {
+          "icon": "⚠️",
+          "text": "RETENTION HOOK",
+          "position": "top-right",
+          "animation": "shake",
+          "at": 0.2,
+          "bg": "rgba(220, 38, 38, 0.95)",
+          "color": "#ffffff"
+        }
+      ],
+      "soundDesign": [
+        {
+          "cue": "impact-bass-1",
+          "at": 0.0,
+          "volume": 0.6
+        }
+      ]
     },
     "main": {
       "layout": "full-bleed",
       "mediaTreatment": "full-bleed",
-      "mediaMotion": "slow-zoom-in",
+      "mediaMotion": "3d-tilt",
+      "textSize": "lg",
       "textTreatment": {
         "fontMood": "bold-geometric",
-        "decoration": "clean-flat"
+        "decoration": "gradient-fill"
       },
-      "emphasisEffect": "underline",
-      "transitionIn": "crossfade",
+      "textGradient": "linear-gradient(135deg, #F59E0B, #22D3EE)",
+      "emphasisEffect": "scale-emphasis",
+      "transitionIn": "whip-pan",
       "transitionOut": "crossfade",
       "backgroundTreatment": "gradient",
-      "badge": "NAMA PODCAST",
+      "badge": "NAMA PODCAST 🎙️",
       "headline": "Headline Utama Klip",
       "highlightWords": ["Kunci"],
       "animation": "pop",
-      "soundDesign": []
+      "textTransitionOut": "slide-up",
+      "overlayElements": ["neon-frame"],
+      "stickers": [
+        {
+          "icon": "💡",
+          "text": "KEY INSIGHT",
+          "position": "bottom-right",
+          "animation": "bounce",
+          "at": 1.5,
+          "bg": "rgba(124, 58, 237, 0.92)",
+          "color": "#ffffff"
+        }
+      ],
+      "soundDesign": [
+        {
+          "cue": "whoosh-cinematic",
+          "at": 0.0,
+          "volume": 0.45
+        }
+      ]
     }
   },
   "thumbnail": {
@@ -180,14 +221,19 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
 - **Layout**: `blurred-backdrop`, `full-bleed`, `split-screen`
 - **Media treatment**: `full-bleed`, `rounded-card`, `floating-panel`
 - **Media motion**: `none`, `slow-zoom-in`, `zoom-out`, `pan-left`, `pan-right`, `shake-on-impact`, `handheld-drift`, `parallax`, `3d-tilt`, `subtle-float`
-- **Font mood**: `default`, `heavy-condensed`, `bold-geometric`
-- **Text decoration**: `thick-outline`, `hard-shadow`, `soft-glow`, `clean-flat`
+- **Font mood**: `default` (Inter), `heavy-condensed` (Anton/Oswald), `bold-geometric` (Syne/Montserrat), `rounded-playful` (Fredoka), `monospace-tech` (Space Mono), `editorial-serif` (Playfair Display), `handwritten` (Caveat), `pixel-arcade` (Press Start 2P)
+- **Text decoration**: `thick-outline`, `hard-shadow`, `soft-glow`, `clean-flat`, `neon-glow`, `sticker-pop`, `cyber-box`, `retro-pixel`, `gradient-fill`
+- **Text size**: `sm`, `md`, `lg`, `xl`, `hero`
+- **Text transition out**: `fade`, `slide-up`, `slide-down`, `zoom-fade`, `glitch-out`, `cut`
 - **Emphasis effect**: `underline`, `circle`, `scribble`, `color-invert`, `spotlight`, `burst`, `scale-emphasis`
 - **Transition**: `cut`, `crossfade`, `blur-crossfade`, `push-up`, `zoom-through`, `elastic-push`, `circle-iris`, `whip-pan`, `light-leak`
 - **Background treatment**: `radial-glow`, `noise-texture`, `gradient`, `floating-particles`, `vignette`, `solid-color`
 - **Headline animation**: `slam`, `pop`, `shake`, `zoom`, `slide`, `spring`, `bounce`, `fade`, `blur-reveal`, `elastic`
-- **Caption mode**: `word-highlight`, `phrase`, `off`
-- **Caption position**: `lower-third`, `center-lower`
+- **Caption mode**: `word-highlight`, `boxed-karaoke`, `word-pop`, `phrase`, `off`
+- **Caption position**: `lower-third`, `center-lower`, `center`, `top`
+- **Overlay elements**: `speed-lines`, `warning-stripes`, `neon-frame`
+- **Stickers**: Array of `{ icon, text, position: "top-right"|"top-left"|"center-right"|"center-left"|"bottom-right"|"bottom-left", animation: "pop"|"shake"|"bounce"|"fade", at: number, bg?: string, color?: string, border?: string }`
+- **Sound design**: Array of `{ cue: "impact-bass-1"|"impact-bass-2"|"whoosh-cinematic"|"whoosh-short"|"glitch-1"|"ping"|"pop"|"sparkle"|"error"|"click-soft"|"key-press", at: number, volume?: number }`
 
 ---
 

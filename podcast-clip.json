@@ -53,7 +53,7 @@
     "textColor": "#FFFFFF"
   },
   "audio": {
-    "bgmSrc": "assets/audio/bgm.mp3",
+    "bgmSrc": "none",
     "bgmVolume": 0.12
   },
   "scenes": {

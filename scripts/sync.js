@@ -60,15 +60,23 @@ const ALLOWED_ENUMS = {
     'none', 'slow-zoom-in', 'zoom-out', 'pan-left', 'pan-right',
     'shake-on-impact', 'handheld-drift', 'parallax', '3d-tilt', 'subtle-float'
   ],
-  fontMood: ['default', 'heavy-condensed', 'bold-geometric'],
-  textDecoration: ['thick-outline', 'hard-shadow', 'soft-glow', 'clean-flat'],
+  fontMood: [
+    'default', 'heavy-condensed', 'bold-geometric', 'rounded-playful',
+    'monospace-tech', 'editorial-serif', 'handwritten', 'pixel-arcade'
+  ],
+  textDecoration: [
+    'thick-outline', 'hard-shadow', 'soft-glow', 'clean-flat',
+    'gradient-fill', '3d-extrusion', 'double-shadow', 'distorted'
+  ],
   emphasisEffect: ['underline', 'circle', 'scribble', 'color-invert', 'spotlight', 'burst', 'scale-emphasis'],
   transition: ['cut', 'crossfade', 'blur-crossfade', 'push-up', 'zoom-through', 'elastic-push', 'circle-iris', 'whip-pan', 'light-leak'],
   backgroundTreatment: ['radial-glow', 'noise-texture', 'gradient', 'floating-particles', 'vignette', 'solid-color'],
   headlineAnimation: ['slam', 'pop', 'shake', 'zoom', 'slide', 'spring', 'bounce', 'fade', 'blur-reveal', 'elastic'],
-  captionMode: ['word-highlight', 'phrase', 'off'],
-  captionPosition: ['lower-third', 'center-lower'],
-  transcriptFormat: ['normalized-json', 'vtt', 'srt']
+  captionMode: ['word-highlight', 'boxed-karaoke', 'word-pop', 'phrase', 'off'],
+  captionPosition: ['lower-third', 'center-lower', 'center', 'top'],
+  transcriptFormat: ['normalized-json', 'vtt', 'srt'],
+  textTransitionOut: ['fade', 'slide-up', 'shrink', 'glitch-out', 'slam-away', 'none'],
+  textSize: ['sm', 'md', 'lg', 'xl', 'hero']
 };
 
 const validationErrors = [];
@@ -132,11 +140,16 @@ if (config.captions) {
   validateEnum(scene.transitionOut, ALLOWED_ENUMS.transition, `scenes.${sceneKey}.transitionOut`);
   validateEnum(scene.backgroundTreatment, ALLOWED_ENUMS.backgroundTreatment, `scenes.${sceneKey}.backgroundTreatment`);
   validateEnum(scene.animation, ALLOWED_ENUMS.headlineAnimation, `scenes.${sceneKey}.animation`);
+  validateEnum(scene.textTransitionOut, ALLOWED_ENUMS.textTransitionOut, `scenes.${sceneKey}.textTransitionOut`);
+  validateEnum(scene.textSize, ALLOWED_ENUMS.textSize, `scenes.${sceneKey}.textSize`);
 
   if (Array.isArray(scene.soundDesign)) {
     scene.soundDesign.forEach((sfx, sfxIdx) => {
+      if (!sfx.assetSrc && sfx.cue) {
+        sfx.assetSrc = `assets/audio/sfx/${sfx.cue}.mp3`;
+      }
       if (!sfx.assetSrc) {
-        validationErrors.push(`Field 'assetSrc' wajib diisi pada scenes.${sceneKey}.soundDesign[${sfxIdx}].`);
+        validationErrors.push(`Field 'assetSrc' atau 'cue' wajib diisi pada scenes.${sceneKey}.soundDesign[${sfxIdx}].`);
       } else {
         const fullSfxPath = path.isAbsolute(sfx.assetSrc) ? sfx.assetSrc : path.join(projectDir, sfx.assetSrc);
         if (!skipMedia && !fs.existsSync(fullSfxPath)) {
@@ -566,16 +579,18 @@ if (fs.existsSync(indexPath)) {
   const programAudioRel = 'working/audio/program-audio.wav';
   audioElementsHtml += `\n        <audio id="program-audio" src="${programAudioRel}" data-start="0.00" data-duration="${finalDuration.toFixed(2)}" data-volume="1.0" data-track-index="1"></audio>`;
 
-  // Track 2: Sound Design (SFX)
+  // Track 2+: Sound Design (SFX)
   if (Array.isArray(config.scenes?.hook?.soundDesign)) {
     config.scenes.hook.soundDesign.forEach((sfx, i) => {
-      if (sfx.assetSrc) {
-        const fullSfxPath = path.isAbsolute(sfx.assetSrc) ? sfx.assetSrc : path.join(projectDir, sfx.assetSrc);
+      const sfxSrcPath = sfx.assetSrc || (sfx.cue ? `assets/audio/sfx/${sfx.cue}.mp3` : null);
+      if (sfxSrcPath) {
+        const fullSfxPath = path.isAbsolute(sfxSrcPath) ? sfxSrcPath : path.join(projectDir, sfxSrcPath);
         if (fs.existsSync(fullSfxPath)) {
           const sfxStart = parseFloat(sfx.at) || 0;
           const sfxVol = sfx.volume !== undefined ? sfx.volume : 0.4;
-          const sfxSrc = sfx.assetSrc.replace(/\\/g, '/');
-          audioElementsHtml += `\n        <audio id="hook-sfx-${i + 1}" src="${sfxSrc}" data-start="${sfxStart.toFixed(2)}" data-volume="${sfxVol}" data-track-index="2"></audio>`;
+          const sfxSrc = sfxSrcPath.replace(/\\/g, '/');
+          const trackIdx = 2 + (i % 5);
+          audioElementsHtml += `\n        <audio id="hook-sfx-${i + 1}" src="${sfxSrc}" data-start="${sfxStart.toFixed(2)}" data-volume="${sfxVol}" data-track-index="${trackIdx}"></audio>`;
         }
       }
     });
@@ -583,13 +598,15 @@ if (fs.existsSync(indexPath)) {
 
   if (Array.isArray(config.scenes?.main?.soundDesign)) {
     config.scenes.main.soundDesign.forEach((sfx, i) => {
-      if (sfx.assetSrc) {
-        const fullSfxPath = path.isAbsolute(sfx.assetSrc) ? sfx.assetSrc : path.join(projectDir, sfx.assetSrc);
+      const sfxSrcPath = sfx.assetSrc || (sfx.cue ? `assets/audio/sfx/${sfx.cue}.mp3` : null);
+      if (sfxSrcPath) {
+        const fullSfxPath = path.isAbsolute(sfxSrcPath) ? sfxSrcPath : path.join(projectDir, sfxSrcPath);
         if (fs.existsSync(fullSfxPath)) {
           const sfxStart = hookDuration + (parseFloat(sfx.at) || 0);
           const sfxVol = sfx.volume !== undefined ? sfx.volume : 0.4;
-          const sfxSrc = sfx.assetSrc.replace(/\\/g, '/');
-          audioElementsHtml += `\n        <audio id="main-sfx-${i + 1}" src="${sfxSrc}" data-start="${sfxStart.toFixed(2)}" data-volume="${sfxVol}" data-track-index="2"></audio>`;
+          const sfxSrc = sfxSrcPath.replace(/\\/g, '/');
+          const trackIdx = 2 + ((i + 2) % 5);
+          audioElementsHtml += `\n        <audio id="main-sfx-${i + 1}" src="${sfxSrc}" data-start="${sfxStart.toFixed(2)}" data-volume="${sfxVol}" data-track-index="${trackIdx}"></audio>`;
         }
       }
     });
