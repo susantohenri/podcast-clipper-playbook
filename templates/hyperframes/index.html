@@ -52,9 +52,9 @@
     /* Top Progress Bar */
     #progress-wrap {
       position: absolute;
-      top: 36px;
-      left: 48px;
-      right: 48px;
+      top: 196px;
+      left: 54px;
+      right: 54px;
       height: 8px;
       background: rgba(255, 255, 255, 0.18);
       border-radius: 999px;
@@ -172,30 +172,30 @@
     }
 
     .layout-blurred-backdrop .media-container.treatment-rounded-card {
-      top: 140px;
+      top: 220px;
       left: 54px;
       width: 972px;
-      height: 1480px;
+      height: 1360px;
       border-radius: 36px;
       overflow: hidden;
       box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 0 2px rgba(255, 255, 255, 0.1);
     }
 
     .layout-blurred-backdrop .media-container.treatment-floating-panel {
-      top: 160px;
+      top: 230px;
       left: 60px;
       width: 960px;
-      height: 1420px;
+      height: 1320px;
       border-radius: 28px;
       overflow: hidden;
       box-shadow: 0 35px 80px rgba(0, 0, 0, 0.85), 0 0 25px rgba(124, 58, 237, 0.4);
     }
 
     .layout-split-screen .media-container {
-      top: 180px;
+      top: 230px;
       left: 54px;
       width: 972px;
-      height: 1200px;
+      height: 1150px;
       border-radius: 32px;
       overflow: hidden;
       box-shadow: 0 20px 50px rgba(0,0,0,0.6);
@@ -209,7 +209,7 @@
     /* Header / Editorial Overlay */
     .header-overlay {
       position: absolute;
-      top: 90px;
+      top: 230px;
       left: 54px;
       right: 54px;
       display: flex;
@@ -284,6 +284,7 @@
     /* Emphasis Effects */
     .highlight-span {
       color: var(--color-highlight);
+      -webkit-text-fill-color: var(--color-highlight);
       display: inline-block;
     }
 
@@ -301,6 +302,7 @@
     .emphasis-color-invert .highlight-span {
       background: var(--color-highlight);
       color: #000000;
+      -webkit-text-fill-color: #000000;
       padding: 2px 14px;
       border-radius: 8px;
     }
@@ -324,11 +326,11 @@
     }
 
     .position-lower-third {
-      bottom: 240px;
+      bottom: 390px;
     }
 
     .position-center-lower {
-      bottom: 390px;
+      bottom: 520px;
     }
 
     .speaker-pill {
@@ -350,7 +352,7 @@
       padding: 16px 28px;
       border-radius: 20px;
       text-align: center;
-      max-width: 940px;
+      max-width: 820px;
       border: 1px solid rgba(255, 255, 255, 0.15);
       box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65);
     }
@@ -363,7 +365,9 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
+      align-items: center;
       gap: 12px;
+      min-height: 1.25em;
     }
 
     .caption-word {
@@ -535,9 +539,9 @@
             </div>
 
             ${(badgeText || headlineText) ? `
-              <div class="header-overlay font-mood-${fontMood} decoration-${decoration} emphasis-${emphasis}">
+              <div id="${sc.id}-header" class="header-overlay font-mood-${fontMood} emphasis-${emphasis}">
                 ${badgeText ? `<div id="${sc.id}-badge" class="scene-badge">${badgeText}</div>` : ''}
-                ${headlineText ? `<div id="${sc.id}-headline" class="scene-headline">${formattedHeadline}</div>` : ''}
+                ${headlineText ? `<div id="${sc.id}-headline" class="scene-headline decoration-${decoration}">${formattedHeadline}</div>` : ''}
               </div>
             ` : ''}
           </div>
@@ -730,71 +734,117 @@
         captionBox.classList.add(`font-mood-${fontMood}`);
         captionBox.classList.add(`decoration-${decoration}`);
 
-        let lineCounter = 0;
+        // Clean DOM container on start
+        captionLine.innerHTML = '';
 
-        // Process segments for both Hook and Main
+        // Flatten all segments with timeline timestamps
+        const allSegments = [];
+        let segCounter = 0;
         sceneList.forEach(sc => {
-          const segments = sc.transcript || [];
-          segments.forEach(seg => {
-            const segStart = sc.start + seg.relStart;
-            const segEnd = sc.start + seg.relEnd;
-            const segDur = Math.max(0.1, segEnd - segStart);
-            const lineId = `cap-line-${++lineCounter}`;
-
-            const speaker = seg.speakerId ? speakerMap[seg.speakerId] : null;
-
-            // Build Line DOM
-            const lineEl = document.createElement('div');
-            lineEl.id = lineId;
-            lineEl.className = 'caption-line-item';
-            lineEl.style.display = 'none';
-
-            if (captionsConfig.mode === 'word-highlight' && Array.isArray(seg.words) && seg.words.length > 0) {
-              seg.words.forEach((w, wIdx) => {
-                const wordSpan = document.createElement('span');
-                wordSpan.id = `${lineId}-w-${wIdx}`;
-                wordSpan.className = 'caption-word';
-                wordSpan.textContent = w.text;
-                lineEl.appendChild(wordSpan);
-              });
-            } else {
-              lineEl.textContent = seg.text;
-            }
-
-            captionLine.appendChild(lineEl);
-
-            // Timeline triggers for segment line
-            tl.call(() => {
-              if (captionsConfig.speakerLabels && speaker) {
-                speakerBadge.textContent = speaker.name;
-                speakerBadge.style.color = speaker.color || '#FFFFFF';
-                speakerBadge.style.borderColor = speaker.color || '#FFFFFF';
-              }
-            }, null, segStart);
-
-            tl.set(lineEl, { display: 'flex', opacity: 1, visibility: 'visible' }, segStart);
-            tl.set(captionBox, { display: 'block', opacity: 1, visibility: 'visible' }, segStart);
-            if (captionsConfig.speakerLabels && speaker) {
-              tl.set(speakerBadge, { display: 'inline-flex', opacity: 1, visibility: 'visible' }, segStart);
-            }
-
-            // Word-level highlight triggers (pure GSAP deterministic)
-            if (captionsConfig.mode === 'word-highlight' && Array.isArray(seg.words) && seg.words.length > 0) {
-              seg.words.forEach((w, wIdx) => {
-                const wStart = sc.start + w.relStart;
-                const wEnd = sc.start + w.relEnd;
-                const wordSel = `#${lineId}-w-${wIdx}`;
-                tl.set(wordSel, { color: config.captions?.highlightColor || '#F7C948', scale: 1.1 }, wStart);
-                tl.set(wordSel, { color: '#FFFFFF', scale: 1.0 }, wEnd);
-              });
-            }
-
-            // Deterministic hard kill at segment end
-            tl.set(lineEl, { opacity: 0, visibility: 'hidden', display: 'none' }, segEnd);
-            tl.set(captionBox, { opacity: 0, visibility: 'hidden', display: 'none' }, segEnd);
-            tl.set(speakerBadge, { opacity: 0, visibility: 'hidden', display: 'none' }, segEnd);
+          (sc.transcript || []).forEach(seg => {
+            allSegments.push({
+              idx: ++segCounter,
+              segStart: sc.start + seg.relStart,
+              segEnd: sc.start + seg.relEnd,
+              scStart: sc.start,
+              text: seg.text,
+              speaker: seg.speakerId ? speakerMap[seg.speakerId] : null,
+              words: Array.isArray(seg.words) ? seg.words : []
+            });
           });
         });
+
+        let currentSegIdx = -1;
+        const isHighlight = (captionsConfig.mode === 'word-highlight');
+        const isBoxed = (captionsConfig.mode === 'boxed-karaoke');
+        const isWordPop = (captionsConfig.mode === 'word-pop');
+        const highlightColor = config.captions?.highlightColor || '#F7C948';
+
+        function updateCaptions(time) {
+          const current = allSegments.find(s => time >= s.segStart && time < s.segEnd);
+          if (!current) {
+            captionBox.style.display = 'none';
+            captionBox.style.opacity = '0';
+            captionBox.style.visibility = 'hidden';
+            if (speakerBadge) speakerBadge.style.display = 'none';
+            captionLine.textContent = '';
+            currentSegIdx = -1;
+            return;
+          }
+
+          captionBox.style.display = 'block';
+          captionBox.style.opacity = '1';
+          captionBox.style.visibility = 'visible';
+
+          // Speaker Badge
+          if (captionsConfig.speakerLabels && current.speaker) {
+            speakerBadge.textContent = current.speaker.name;
+            speakerBadge.style.color = current.speaker.color || '#FFFFFF';
+            speakerBadge.style.borderColor = current.speaker.color || '#FFFFFF';
+            speakerBadge.style.display = 'inline-flex';
+          } else if (speakerBadge) {
+            speakerBadge.style.display = 'none';
+          }
+
+          // Render Line
+          const hasWords = current.words.length > 0;
+          if ((isHighlight || isBoxed || isWordPop) && hasWords) {
+            if (currentSegIdx !== current.idx) {
+              currentSegIdx = current.idx;
+              captionLine.innerHTML = current.words.map((w, wIdx) => 
+                `<span id="hf-cap-w-${wIdx}" class="caption-word">${w.text}</span>`
+              ).join(' ');
+            }
+
+            // Word-level state
+            current.words.forEach((w, wIdx) => {
+              const wStart = current.scStart + w.relStart;
+              const wEnd = current.scStart + w.relEnd;
+              const wEl = document.getElementById(`hf-cap-w-${wIdx}`);
+              if (!wEl) return;
+
+              if (time >= wStart && time < wEnd) {
+                if (isBoxed) {
+                  wEl.className = 'caption-word boxed-active';
+                } else if (isWordPop) {
+                  wEl.style.opacity = '1';
+                  wEl.style.transform = 'scale(1.15)';
+                } else {
+                  wEl.style.color = highlightColor;
+                  wEl.style.transform = 'scale(1.15)';
+                  wEl.style.fontWeight = '900';
+                }
+              } else {
+                if (isBoxed) {
+                  wEl.className = 'caption-word';
+                } else if (isWordPop) {
+                  wEl.style.opacity = time < wStart ? '0' : '1';
+                  wEl.style.transform = 'scale(1.0)';
+                } else {
+                  wEl.style.color = '#FFFFFF';
+                  wEl.style.transform = 'scale(1.0)';
+                  wEl.style.fontWeight = '800';
+                }
+              }
+            });
+          } else {
+            if (currentSegIdx !== current.idx) {
+              currentSegIdx = current.idx;
+              captionLine.textContent = current.text;
+            }
+          }
+        }
+
+        // Initial state (also satisfies HyperFrames StaticGuard deterministic kill)
+        gsap.set(captionBox, { opacity: 0, visibility: 'hidden' });
+
+        // Attach state sync to timeline onUpdate
+        tl.eventCallback('onUpdate', function() {
+          updateCaptions(this.time());
+        });
+
+        // Initialize state at time 0
+        updateCaptions(0);
       }
 
       // Register Paused Root Timeline with HyperFrames

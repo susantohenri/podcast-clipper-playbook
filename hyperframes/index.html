@@ -8,7 +8,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@600;700&family=Fredoka:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800;900&family=Oswald:wght@600;700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Press+Start+2P&family=Space+Mono:ital,wght@0,700;1,700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@600;700&family=Fredoka:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800;900&family=Oswald:wght@600;700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Press+Start+2P&family=Space+Mono:ital,wght@0,700;1,700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 
   <!-- GSAP Animation Library -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
@@ -304,10 +304,13 @@
       text-shadow: 0 4px 14px rgba(0,0,0,0.6);
     }
     .decoration-gradient-fill {
-      background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-highlight) 100%);
+      --headline-gradient: linear-gradient(135deg, var(--color-accent) 0%, var(--color-highlight) 100%);
+      filter: drop-shadow(0 6px 18px rgba(0,0,0,0.85));
+    }
+    .gradient-chunk {
+      background: var(--headline-gradient, linear-gradient(135deg, var(--color-accent) 0%, var(--color-highlight) 100%));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 6px 18px rgba(0,0,0,0.85));
     }
     .decoration-3d-extrusion {
       text-shadow: 0 1px 0 #ffffff, 0 2px 0 var(--color-accent), 0 3px 0 var(--color-accent), 0 4px 0 var(--color-primary), 0 5px 0 var(--color-primary), 0 6px 0 var(--color-primary), 0 10px 20px rgba(0, 0, 0, 0.9);
@@ -370,12 +373,12 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(245, 158, 11, 0.35);
       backdrop-filter: blur(12px);
     }
-    .sticker-top-right { top: 230px; right: 54px; }
-    .sticker-top-left { top: 230px; left: 54px; }
+    .sticker-top-right { top: 112px; right: 54px; }
+    .sticker-top-left { top: 112px; left: 54px; }
     .sticker-center-right { top: 50%; right: 150px; transform: translateY(-50%); }
     .sticker-center-left { top: 50%; left: 54px; transform: translateY(-50%); }
-    .sticker-bottom-right { bottom: 420px; right: 150px; }
-    .sticker-bottom-left { bottom: 420px; left: 54px; }
+    .sticker-bottom-right { bottom: 250px; right: 150px; }
+    .sticker-bottom-left { bottom: 250px; left: 54px; }
     .sticker-icon { font-size: 32px; line-height: 1; }
 
     /* Action Overlays */
@@ -436,7 +439,7 @@
       bottom: auto;
     }
     .position-top {
-      top: 240px;
+      top: 470px;
       bottom: auto;
     }
 
@@ -519,14 +522,11 @@
 
     <!-- Audio Wrapper (Stamped by sync.js) -->
     <div data-hf-id="hf-wffr" id="audio-wrapper">
-        <audio data-hf-id="hf-wk2y" id="program-audio" src="working/audio/program-audio.wav" data-start="0.00" data-duration="62.40" data-volume="1.0" data-track-index="1"></audio>
-        <audio data-hf-id="hf-n8uy" id="hook-sfx-1" src="assets/audio/sfx/impact-bass-1.mp3" data-start="0.00" data-volume="0.25" data-track-index="2"></audio>
-        <audio data-hf-id="hf-xqop" id="hook-sfx-2" src="assets/audio/sfx/pop.mp3" data-start="1.90" data-volume="0.12" data-track-index="3"></audio>
-        <audio data-hf-id="hf-pjqu" id="hook-sfx-3" src="assets/audio/sfx/pop.mp3" data-start="3.40" data-volume="0.12" data-track-index="4"></audio>
-        <audio data-hf-id="hf-z3my" id="hook-sfx-4" src="assets/audio/sfx/whoosh-cinematic.mp3" data-start="4.10" data-volume="0.2" data-track-index="5"></audio>
-        <audio data-hf-id="hf-y6dg" id="main-sfx-1" src="assets/audio/sfx/whoosh-short.mp3" data-start="4.40" data-volume="0.15" data-track-index="4"></audio>
-        <audio data-hf-id="hf-uget" id="main-sfx-2" src="assets/audio/sfx/pop.mp3" data-start="26.80" data-volume="0.12" data-track-index="5"></audio>
-        <audio data-hf-id="hf-n49d" id="main-sfx-3" src="assets/audio/sfx/impact-bass-2.mp3" data-start="57.00" data-volume="0.18" data-track-index="6"></audio>
+        <audio data-hf-id="hf-fkg9" id="program-audio" src="working/audio/program-audio.wav" data-start="0.00" data-duration="48.18" data-volume="1.0" data-track-index="1"></audio>
+        <audio data-hf-id="hf-juu6" id="hook-sfx-1" src="assets/audio/sfx/impact-bass-1.mp3" data-start="0.00" data-volume="0.65" data-track-index="2"></audio>
+        <audio data-hf-id="hf-jik7" id="hook-sfx-2" src="assets/audio/sfx/pop.mp3" data-start="4.10" data-volume="0.35" data-track-index="3"></audio>
+        <audio data-hf-id="hf-45oa" id="main-sfx-1" src="assets/audio/sfx/whoosh-cinematic.mp3" data-start="5.18" data-volume="0.5" data-track-index="4"></audio>
+        <audio data-hf-id="hf-tz4v" id="main-sfx-2" src="assets/audio/sfx/ping.mp3" data-start="36.48" data-volume="0.3" data-track-index="5"></audio>
       </div>
 
   </div>
@@ -645,13 +645,31 @@
             </div>`;
         }
 
-        // Formatted headline with highlights
+        // Formatted headline with highlights (single-pass longest-first to prevent nested spans)
+        // Wrap plain text chunks in .gradient-chunk when gradient-fill/textGradient is active
+        // to avoid Chromium's background-clip:text + inline-block transform compositing bug.
+        const useGradientChunks = (decoration === 'gradient-fill' || Boolean(spec.textGradient));
         let formattedHeadline = headlineText;
         if (Array.isArray(spec.highlightWords) && spec.highlightWords.length > 0) {
-          spec.highlightWords.forEach(word => {
-            const regex = new RegExp(`(${word})`, 'gi');
-            formattedHeadline = formattedHeadline.replace(regex, '<span class="highlight-span">$1</span>');
-          });
+          const validWords = spec.highlightWords
+            .filter(w => typeof w === 'string' && w.trim().length > 0)
+            .sort((a, b) => b.length - a.length)
+            .map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+          if (validWords.length > 0) {
+            const regex = new RegExp(`(${validWords.join('|')})`, 'gi');
+            const parts = headlineText.split(regex);
+            formattedHeadline = parts.map((part, idx) => {
+              if (!part) return '';
+              if (idx % 2 === 1) {
+                return `<span class="highlight-span">${part}</span>`;
+              }
+              return useGradientChunks ? `<span class="gradient-chunk">${part}</span>` : part;
+            }).join('');
+          } else if (useGradientChunks) {
+            formattedHeadline = `<span class="gradient-chunk">${headlineText}</span>`;
+          }
+        } else if (useGradientChunks && headlineText) {
+          formattedHeadline = `<span class="gradient-chunk">${headlineText}</span>`;
         }
 
         // Text size modifier
@@ -664,7 +682,7 @@
           const grad = (typeof spec.textGradient === 'string' && spec.textGradient.includes('gradient'))
             ? spec.textGradient
             : `linear-gradient(135deg, ${Array.isArray(spec.textGradient) ? spec.textGradient.join(', ') : spec.textGradient})`;
-          headlineStyleParts.push(`background: ${grad}; -webkit-background-clip: text; -webkit-text-fill-color: transparent;`);
+          headlineStyleParts.push(`--headline-gradient: ${grad};`);
         }
         const headlineCustomStyle = headlineStyleParts.length > 0 ? `style="${headlineStyleParts.join(' ')}"` : '';
 

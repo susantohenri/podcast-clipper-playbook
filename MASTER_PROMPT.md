@@ -222,9 +222,9 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
 - **Media treatment**: `full-bleed`, `rounded-card`, `floating-panel`
 - **Media motion**: `none`, `slow-zoom-in`, `zoom-out`, `pan-left`, `pan-right`, `shake-on-impact`, `handheld-drift`, `parallax`, `3d-tilt`, `subtle-float`
 - **Font mood**: `default` (Inter), `heavy-condensed` (Anton/Oswald), `bold-geometric` (Syne/Montserrat), `rounded-playful` (Fredoka), `monospace-tech` (Space Mono), `editorial-serif` (Playfair Display), `handwritten` (Caveat), `pixel-arcade` (Press Start 2P)
-- **Text decoration**: `thick-outline`, `hard-shadow`, `soft-glow`, `clean-flat`, `neon-glow`, `sticker-pop`, `cyber-box`, `retro-pixel`, `gradient-fill`
+- **Text decoration**: `thick-outline`, `hard-shadow`, `soft-glow`, `clean-flat`, `gradient-fill`, `3d-extrusion`, `double-shadow`, `distorted`
 - **Text size**: `sm`, `md`, `lg`, `xl`, `hero`
-- **Text transition out**: `fade`, `slide-up`, `slide-down`, `zoom-fade`, `glitch-out`, `cut`
+- **Text transition out**: `fade`, `slide-up`, `shrink`, `glitch-out`, `slam-away`, `none`
 - **Emphasis effect**: `underline`, `circle`, `scribble`, `color-invert`, `spotlight`, `burst`, `scale-emphasis`
 - **Transition**: `cut`, `crossfade`, `blur-crossfade`, `push-up`, `zoom-through`, `elastic-push`, `circle-iris`, `whip-pan`, `light-leak`
 - **Background treatment**: `radial-glow`, `noise-texture`, `gradient`, `floating-particles`, `vignette`, `solid-color`
@@ -327,7 +327,7 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
 
 ### TAHAP 5 — Creative Direction Visual & Penyusunan Spesifikasi JSON
 
-- **Tujuan:** Menentukan gaya visual dan menghasilkan berkas spesifikasi `podcast-clip.json`.
+- **Tujuan:** Merancang komposisi visual yang memaksimalkan *retention* penonton (bukan sekadar mengisi semua kolom template) dan menghasilkan berkas `podcast-clip.json`.
 - **Pelaksana:** LLM dan User.
 - **Lokasi:** Chat LLM dan berkas `podcast-clip.json`.
 - **Aksi:**
@@ -336,10 +336,21 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
      - **Gaya 2: High Energy / Viral** (`layout`: "blurred-backdrop", `mediaTreatment`: "rounded-card", `backgroundTreatment`: "radial-glow", `mediaMotion`: "shake-on-impact", `animation`: "slam", `fontMood`: "bold-geometric").
      - **Gaya 3: Minimalist Modern** (`layout`: "full-bleed", `backgroundTreatment`: "gradient", `mediaMotion`: "slow-zoom-in", `animation`: "pop", `fontMood`: "default").
      User memilih 1 konsep visual.
-  2. Setelah konsep dipilih, LLM merumuskan berkas `podcast-clip.json` lengkap yang 100% valid terhadap schema kontrak.
-  3. **ATURAN MUTLAK SUBTITLE (OTOMASI DETERMINISTIK SKRIP):**
+  2. **PRINSIP RETENTION-FIRST & ANTI-ISI-FORM (WAJIB DIPATUHI):**
+     - **Jangan isi semua field sebagai rutinitas:** `badge`, `headline`, `stickers`, dan `overlayElements` bersifat **opsional**. Kosongkan (`""` atau `[]`) jika tidak secara langsung menaikkan *retention* atau memperjelas konteks.
+     - **Haram label filler generik:** DILARANG menulis teks template seperti `"RETENTION HOOK"`, `"KEY INSIGHT"`, `"HOT TAKE"`, atau sekadar nama podcast pada `badge`/`stickers` jika tidak menambah rasa penasaran.
+     - **Headline singkat & memicu penasaran:** Maksimal **3–5 kata** yang menciptakan *curiosity gap* (jangan merangkum semua syarat/kalimat panjang).
+     - **Beat-synced pattern interrupt:** Setiap `sticker` dan `soundDesign` wajib diikat ke detik spesifik saat pembicara mengucap angka, kontras, atau klaim mengejutkan — bukan detik acak.
+     - **Aturan zona aman (anti-tabrakan):** Maksimal 1 sticker per scene (atau `[]` di `hook` jika headline sudah kuat); dilarang memakai posisi sticker yang sama lebih dari sekali; dilarang `captions.position: "top"` jika scene memakai `badge`/`headline`; dilarang sticker `center-left`/`center-right` jika `captions.position: "center"`.
+  3. **REVIEW WAJIB DARI POV PENONTON (SEBELUM MENULIS JSON):**
+     Sebelum menyajikan JSON final, LLM WAJIB menguji rancangan visualnya dari sudut pandang penonton asing di feed HP dan menuliskan hasil audit singkatnya:
+     - *Tes 3 detik pertama:* Apakah visual + hook langsung bikin berhenti scroll tanpa konteks sebelumnya?
+     - *Tes kebersihan layar:* Apakah wajah pembicara dan subtitle dominan serta bebas tumpukan elemen?
+     - *Tes eliminasi filler:* Apakah ada elemen dekoratif yang cuma mengisi template? Jika ada, buang sebelum menyusun JSON.
+  4. Setelah konsep dipilih dan lolos review POV penonton, LLM merumuskan berkas `podcast-clip.json` lengkap yang 100% valid terhadap schema kontrak.
+  5. **ATURAN MUTLAK SUBTITLE (OTOMASI DETERMINISTIK SKRIP):**
      LLM DILARANG KERAS menyusun atau mengarang berkas `input/transcript.json` secara manual di chat! Pekerjaan timestamp mikro dan pemotongan subtitle 100% diotomatisasi secara presisi oleh skrip lokal (`npm run dev`) langsung dari suara video `working/main-clip-portrait.mp4`.
-  4. LLM memberikan panduan operasional kepada User untuk menyalin blok spesifikasi ke `podcast-clip.json`.
+  6. LLM memberikan panduan operasional kepada User untuk menyalin blok spesifikasi ke `podcast-clip.json`.
 - **Command:** *(Tidak ada)*.
 - **Hasil yang diharapkan:** Berkas `podcast-clip.json` tersimpan dengan data spesifikasi riil dan valid.
 - **Langkah setelahnya:** LLM wajib menginstruksikan User untuk memastikan file tersimpan dan mengonfirmasi penyelesaian simpan di chat, lalu melanjutkan ke Tahap 6 untuk sinkronisasi otomatis dan preview.
@@ -360,7 +371,9 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
      - **Transcribe**: Mengekstrak audio video dan membuat subtitle presisi kata-demi-kata via Whisper AI lokal (`input/transcript.json`) sesuai offset `clip.main.start`.
      - **Sync**: Memvalidasi konfigurasi, memotong video hook (`working/hook-portrait.mp4`), menyusun audio program multi-track (`working/audio/program-audio.wav`), dan mengecap kode runtime HyperFrames.
      - **Preview**: Membuka live interactive preview HyperFrames di browser.
-  3. Gemini Web memandu User mengevaluasi preview secara operasional:
+  3. Gemini Web memandu User mengevaluasi preview dari **POV Penonton** dan kelayakan teknis:
+     - Apakah 3 detik pertama langsung memancing penasaran dan tidak terpotong?
+     - Apakah layar bersih, wajah pembicara jelas, dan tidak ada teks/sticker yang saling bertabrakan?
      - Keselarasan karaoke caption dan audio.
      - Kehalusan transisi dari hook ke main clip.
      - Keseimbangan volume voice over dan background music.

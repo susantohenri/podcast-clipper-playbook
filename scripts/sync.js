@@ -76,7 +76,8 @@ const ALLOWED_ENUMS = {
   captionPosition: ['lower-third', 'center-lower', 'center', 'top'],
   transcriptFormat: ['normalized-json', 'vtt', 'srt'],
   textTransitionOut: ['fade', 'slide-up', 'shrink', 'glitch-out', 'slam-away', 'none'],
-  textSize: ['sm', 'md', 'lg', 'xl', 'hero']
+  textSize: ['sm', 'md', 'lg', 'xl', 'hero'],
+  stickerPosition: ['top-right', 'top-left', 'center-right', 'center-left', 'bottom-right', 'bottom-left']
 };
 
 const validationErrors = [];
@@ -142,6 +143,44 @@ if (config.captions) {
   validateEnum(scene.animation, ALLOWED_ENUMS.headlineAnimation, `scenes.${sceneKey}.animation`);
   validateEnum(scene.textTransitionOut, ALLOWED_ENUMS.textTransitionOut, `scenes.${sceneKey}.textTransitionOut`);
   validateEnum(scene.textSize, ALLOWED_ENUMS.textSize, `scenes.${sceneKey}.textSize`);
+
+  // Layout collision & retention guardrails
+  const captionPos = config.captions?.enabled && config.captions?.mode !== 'off'
+    ? (config.captions?.position || 'lower-third')
+    : null;
+  const hasHeader = Boolean((scene.headline && scene.headline.trim()) || (scene.badge && scene.badge.trim()));
+
+  if (captionPos === 'top' && hasHeader) {
+    validationErrors.push(`Konflik zona di scenes.${sceneKey}: captions.position 'top' bertabrakan dengan header (badge/headline). Gunakan 'lower-third' atau 'center-lower'.`);
+  }
+
+  if (scene.headline && scene.headline.trim().length > 48) {
+    console.warn(`[sync] ⚠️ scenes.${sceneKey}.headline terlalu panjang (${scene.headline.trim().length} karakter). Disarankan maksimal 3-5 kata agar tidak turun baris berlebihan.`);
+  }
+
+  if (Array.isArray(scene.stickers)) {
+    const usedPositions = new Set();
+    const sceneDur = sceneKey === 'hook'
+      ? (typeof hookStart === 'number' && typeof hookEnd === 'number' ? hookEnd - hookStart : null)
+      : (typeof mainStart === 'number' && typeof mainEnd === 'number' ? mainEnd - mainStart : null);
+
+    scene.stickers.forEach((stk, stkIdx) => {
+      validateEnum(stk.position, ALLOWED_ENUMS.stickerPosition, `scenes.${sceneKey}.stickers[${stkIdx}].position`);
+      if (stk.position) {
+        if (usedPositions.has(stk.position)) {
+          validationErrors.push(`Konflik zona di scenes.${sceneKey}.stickers[${stkIdx}]: posisi '${stk.position}' dipakai lebih dari 1 sticker dan akan bertumpuk.`);
+        }
+        usedPositions.add(stk.position);
+
+        if (captionPos === 'center' && (stk.position === 'center-left' || stk.position === 'center-right')) {
+          validationErrors.push(`Konflik zona di scenes.${sceneKey}.stickers[${stkIdx}]: posisi '${stk.position}' bertabrakan dengan captions.position 'center'.`);
+        }
+      }
+      if (sceneDur !== null && typeof stk.at === 'number' && (stk.at < 0 || stk.at >= sceneDur)) {
+        console.warn(`[sync] ⚠️ scenes.${sceneKey}.stickers[${stkIdx}].at (${stk.at}s) berada di luar durasi scene (${sceneDur.toFixed(2)}s).`);
+      }
+    });
+  }
 
   if (Array.isArray(scene.soundDesign)) {
     scene.soundDesign.forEach((sfx, sfxIdx) => {
