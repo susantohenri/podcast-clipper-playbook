@@ -69,14 +69,25 @@ const ALLOWED_ENUMS = {
     'gradient-fill', '3d-extrusion', 'double-shadow', 'distorted'
   ],
   emphasisEffect: ['underline', 'circle', 'scribble', 'color-invert', 'spotlight', 'burst', 'scale-emphasis'],
-  transition: ['cut', 'crossfade', 'blur-crossfade', 'push-up', 'zoom-through', 'elastic-push', 'circle-iris', 'whip-pan', 'light-leak'],
+  transition: [
+    'cut', 'crossfade', 'blur-crossfade', 'push-up', 'zoom-through',
+    'elastic-push', 'circle-iris', 'whip-pan', 'light-leak',
+    'chromatic-split', 'glitch-wipe', 'domain-warp', 'beat-freeze'
+  ],
   backgroundTreatment: ['radial-glow', 'noise-texture', 'gradient', 'floating-particles', 'vignette', 'solid-color'],
   headlineAnimation: ['slam', 'pop', 'shake', 'zoom', 'slide', 'spring', 'bounce', 'fade', 'blur-reveal', 'elastic'],
-  captionMode: ['word-highlight', 'boxed-karaoke', 'word-pop', 'phrase', 'off'],
+  captionMode: [
+    'word-highlight', 'boxed-karaoke', 'word-pop',
+    'editorial-emphasis', 'pill-karaoke', 'word-sweep', 'kinetic-slam',
+    'phrase', 'off'
+  ],
   captionPosition: ['lower-third', 'center-lower', 'center', 'top'],
   transcriptFormat: ['normalized-json', 'vtt', 'srt'],
   textTransitionOut: ['fade', 'slide-up', 'shrink', 'glitch-out', 'slam-away', 'none'],
   textSize: ['sm', 'md', 'lg', 'xl', 'hero'],
+  overlayElement: ['speed-lines', 'warning-stripes', 'neon-frame', 'film-grain', 'camcorder-hud', 'vox-grid'],
+  beatStyle: ['vox-card', 'stat-pop', 'editorial-quote', 'pill-callout'],
+  beatPosition: ['top-banner', 'upper-card', 'lower-card', 'center-pop'],
   stickerPosition: ['top-right', 'top-left', 'center-right', 'center-left', 'bottom-right', 'bottom-left']
 };
 
@@ -158,11 +169,56 @@ if (config.captions) {
     console.warn(`[sync] ⚠️ scenes.${sceneKey}.headline terlalu panjang (${scene.headline.trim().length} karakter). Disarankan maksimal 3-5 kata agar tidak turun baris berlebihan.`);
   }
 
+  if (Array.isArray(scene.overlayElements)) {
+    scene.overlayElements.forEach((ov, ovIdx) => {
+      validateEnum(ov, ALLOWED_ENUMS.overlayElement, `scenes.${sceneKey}.overlayElements[${ovIdx}]`);
+    });
+  }
+
+  const sceneDur = sceneKey === 'hook'
+    ? (typeof hookStart === 'number' && typeof hookEnd === 'number' ? hookEnd - hookStart : null)
+    : (typeof mainStart === 'number' && typeof mainEnd === 'number' ? mainEnd - mainStart : null);
+
+  if (Array.isArray(scene.beats)) {
+    const beatWindowsByPos = {};
+    scene.beats.forEach((beat, bIdx) => {
+      validateEnum(beat.style, ALLOWED_ENUMS.beatStyle, `scenes.${sceneKey}.beats[${bIdx}].style`);
+      validateEnum(beat.position, ALLOWED_ENUMS.beatPosition, `scenes.${sceneKey}.beats[${bIdx}].position`);
+      if (!beat.title || typeof beat.title !== 'string' || !beat.title.trim()) {
+        validationErrors.push(`Property 'title' wajib diisi pada scenes.${sceneKey}.beats[${bIdx}].`);
+      }
+      if (typeof beat.at !== 'number' || beat.at < 0) {
+        validationErrors.push(`Property 'at' wajib angka >= 0 pada scenes.${sceneKey}.beats[${bIdx}].`);
+      } else if (sceneDur !== null && beat.at >= sceneDur) {
+        console.warn(`[sync] ⚠️ scenes.${sceneKey}.beats[${bIdx}].at (${beat.at}s) berada di luar durasi scene (${sceneDur.toFixed(2)}s).`);
+      }
+      const bPos = beat.position || 'upper-card';
+      if (captionPos === 'top' && bPos === 'upper-card') {
+        validationErrors.push(`Konflik zona di scenes.${sceneKey}.beats[${bIdx}]: posisi '${bPos}' bertabrakan dengan captions.position 'top'.`);
+      }
+      if (captionPos === 'center' && bPos === 'center-pop') {
+        validationErrors.push(`Konflik zona di scenes.${sceneKey}.beats[${bIdx}]: posisi '${bPos}' bertabrakan dengan captions.position 'center'.`);
+      }
+      if (captionPos === 'center-lower' && bPos === 'lower-card') {
+        validationErrors.push(`Konflik zona di scenes.${sceneKey}.beats[${bIdx}]: posisi '${bPos}' bertabrakan dengan captions.position 'center-lower'.`);
+      }
+      if (typeof beat.at === 'number') {
+        const bDur = typeof beat.duration === 'number' && beat.duration > 0 ? beat.duration : 3.2;
+        const bStart = beat.at;
+        const bEnd = bStart + bDur;
+        beatWindowsByPos[bPos] = beatWindowsByPos[bPos] || [];
+        for (const prev of beatWindowsByPos[bPos]) {
+          if (bStart < prev.end && bEnd > prev.start) {
+            console.warn(`[sync] ⚠️ scenes.${sceneKey}.beats[${bIdx}] (${bStart}s–${bEnd.toFixed(1)}s) beririsan waktu dengan beat sebelumnya di posisi '${bPos}'.`);
+          }
+        }
+        beatWindowsByPos[bPos].push({ start: bStart, end: bEnd });
+      }
+    });
+  }
+
   if (Array.isArray(scene.stickers)) {
     const usedPositions = new Set();
-    const sceneDur = sceneKey === 'hook'
-      ? (typeof hookStart === 'number' && typeof hookEnd === 'number' ? hookEnd - hookStart : null)
-      : (typeof mainStart === 'number' && typeof mainEnd === 'number' ? mainEnd - mainStart : null);
 
     scene.stickers.forEach((stk, stkIdx) => {
       validateEnum(stk.position, ALLOWED_ENUMS.stickerPosition, `scenes.${sceneKey}.stickers[${stkIdx}].position`);
@@ -350,9 +406,9 @@ function sliceTranscriptForRange(segments, rangeStart, rangeEnd) {
         const wStart = Math.max(rangeStart, w.start);
         const wEnd = Math.min(rangeEnd, w.end);
         slicedWords.push({
-          text: w.text,
-          relStart: Math.max(0, wStart - rangeStart),
-          relEnd: Math.max(0.05, wEnd - rangeStart)
+          text: w.text || w.word || '',
+          relStart: Math.round(Math.max(0, wStart - rangeStart) * 100) / 100,
+          relEnd: Math.round(Math.max(0.05, wEnd - rangeStart) * 100) / 100
         });
       }
     }

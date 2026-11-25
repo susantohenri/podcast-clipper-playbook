@@ -226,12 +226,13 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
 - **Text size**: `sm`, `md`, `lg`, `xl`, `hero`
 - **Text transition out**: `fade`, `slide-up`, `shrink`, `glitch-out`, `slam-away`, `none`
 - **Emphasis effect**: `underline`, `circle`, `scribble`, `color-invert`, `spotlight`, `burst`, `scale-emphasis`
-- **Transition**: `cut`, `crossfade`, `blur-crossfade`, `push-up`, `zoom-through`, `elastic-push`, `circle-iris`, `whip-pan`, `light-leak`
+- **Transition**: `cut`, `crossfade`, `blur-crossfade`, `push-up`, `zoom-through`, `elastic-push`, `circle-iris`, `whip-pan`, `light-leak`, `chromatic-split`, `glitch-wipe`, `domain-warp`, `beat-freeze`
 - **Background treatment**: `radial-glow`, `noise-texture`, `gradient`, `floating-particles`, `vignette`, `solid-color`
 - **Headline animation**: `slam`, `pop`, `shake`, `zoom`, `slide`, `spring`, `bounce`, `fade`, `blur-reveal`, `elastic`
-- **Caption mode**: `word-highlight`, `boxed-karaoke`, `word-pop`, `phrase`, `off`
+- **Caption mode**: `word-highlight`, `boxed-karaoke`, `word-pop`, `editorial-emphasis`, `pill-karaoke`, `word-sweep`, `kinetic-slam`, `phrase`, `off`
 - **Caption position**: `lower-third`, `center-lower`, `center`, `top`
-- **Overlay elements**: `speed-lines`, `warning-stripes`, `neon-frame`
+- **Overlay elements**: `speed-lines`, `warning-stripes`, `neon-frame`, `film-grain`, `camcorder-hud`, `vox-grid`
+- **Beats (Pattern-Interrupt Callouts di `scenes.main.beats[]` / `scenes.hook.beats[]`)**: Array of `{ at: number, duration?: number, style?: "vox-card"|"stat-pop"|"editorial-quote"|"pill-callout", position?: "top-banner"|"upper-card"|"lower-card"|"center-pop", eyebrow?: string, title: string, highlight?: string, icon?: string }`
 - **Stickers**: Array of `{ icon, text, position: "top-right"|"top-left"|"center-right"|"center-left"|"bottom-right"|"bottom-left", animation: "pop"|"shake"|"bounce"|"fade", at: number, bg?: string, color?: string, border?: string }`
 - **Sound design**: Array of `{ cue: "impact-bass-1"|"impact-bass-2"|"whoosh-cinematic"|"whoosh-short"|"glitch-1"|"ping"|"pop"|"sparkle"|"error"|"click-soft"|"key-press", at: number, volume?: number }`
 
@@ -331,17 +332,19 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
 - **Pelaksana:** LLM dan User.
 - **Lokasi:** Chat LLM dan berkas `podcast-clip.json`.
 - **Aksi:**
-  1. LLM mengusulkan 2–3 konsep visual dengan memadukan whitelist enum yang sah. Gunakan inspirasi resep preset berikut:
-     - **Gaya 1: Dark Investigative / Misteri** (`layout`: "full-bleed", `backgroundTreatment`: "noise-texture", `mediaMotion`: "handheld-drift", `animation`: "blur-reveal", `fontMood`: "heavy-condensed").
-     - **Gaya 2: High Energy / Viral** (`layout`: "blurred-backdrop", `mediaTreatment`: "rounded-card", `backgroundTreatment`: "radial-glow", `mediaMotion`: "shake-on-impact", `animation`: "slam", `fontMood`: "bold-geometric").
-     - **Gaya 3: Minimalist Modern** (`layout`: "full-bleed", `backgroundTreatment`: "gradient", `mediaMotion`: "slow-zoom-in", `animation`: "pop", `fontMood`: "default").
+  1. LLM mengusulkan 2–3 konsep visual dengan memadukan whitelist enum yang sah (jangan selalu sama antar video). Gunakan variasi resep Catalog berikut:
+     - **Gaya 1: Editorial Vox / Analytical** (`captions.mode`: `"editorial-emphasis"` atau `"word-sweep"`, `transitionIn`: `"domain-warp"`/`"blur-crossfade"`, `overlayElements`: `["vox-grid", "film-grain"]`, `beats` pakai `"vox-card"` & `"editorial-quote"`).
+     - **Gaya 2: High Energy / Retention Viral** (`captions.mode`: `"kinetic-slam"` atau `"pill-karaoke"`, `transitionOut`/`transitionIn`: `"chromatic-split"`/`"whip-pan"`, `overlayElements`: `["speed-lines"]`, `beats` pakai `"stat-pop"` & `"pill-callout"`).
+     - **Gaya 3: Documentary / Raw Camcorder** (`captions.mode`: `"word-sweep"` atau `"word-highlight"`, `transitionIn`: `"beat-freeze"`/`"glitch-wipe"`, `overlayElements`: `["camcorder-hud", "film-grain"]`, `mediaMotion`: `"handheld-drift"`).
+     - **Gaya 4: Clean Modern Podcast** (`captions.mode`: `"pill-karaoke"` atau `"editorial-emphasis"`, `layout`: `"full-bleed"`, `backgroundTreatment`: `"gradient"`, `mediaMotion`: `"slow-zoom-in"`, `overlayElements`: `[]`).
      User memilih 1 konsep visual.
   2. **PRINSIP RETENTION-FIRST & ANTI-ISI-FORM (WAJIB DIPATUHI):**
      - **Jangan isi semua field sebagai rutinitas:** `badge`, `headline`, `stickers`, dan `overlayElements` bersifat **opsional**. Kosongkan (`""` atau `[]`) jika tidak secara langsung menaikkan *retention* atau memperjelas konteks.
-     - **Haram label filler generik:** DILARANG menulis teks template seperti `"RETENTION HOOK"`, `"KEY INSIGHT"`, `"HOT TAKE"`, atau sekadar nama podcast pada `badge`/`stickers` jika tidak menambah rasa penasaran.
-     - **Headline singkat & memicu penasaran:** Maksimal **3–5 kata** yang menciptakan *curiosity gap* (jangan merangkum semua syarat/kalimat panjang).
-     - **Beat-synced pattern interrupt:** Setiap `sticker` dan `soundDesign` wajib diikat ke detik spesifik saat pembicara mengucap angka, kontras, atau klaim mengejutkan — bukan detik acak.
-     - **Aturan zona aman (anti-tabrakan):** Maksimal 1 sticker per scene (atau `[]` di `hook` jika headline sudah kuat); dilarang memakai posisi sticker yang sama lebih dari sekali; dilarang `captions.position: "top"` jika scene memakai `badge`/`headline`; dilarang sticker `center-left`/`center-right` jika `captions.position: "center"`.
+     - **Pecah klip panjang dengan `beats[]` tiap 5–8 detik (untuk `main` > 15s):** Alih-alih 1 headline statis selama 40 detik, gunakan 2–4 `beats` yang muncul tepat saat pembicara menyebut angka, syarat, atau klaim penting (misal `stat-pop` untuk angka, `vox-card` untuk poin/highlight, `editorial-quote` untuk kutipan tajam). Pastikan waktu antar beat di posisi yang sama tidak bertumpuk!
+     - **Haram label filler generik:** DILARANG menulis teks template seperti `"RETENTION HOOK"`, `"KEY INSIGHT"`, `"HOT TAKE"`, atau sekadar nama podcast pada `badge`/`stickers`/`beats` jika tidak menambah rasa penasaran.
+     - **Headline & title beat singkat:** Maksimal **3–5 kata** yang menciptakan *curiosity gap* (jangan merangkum kalimat panjang).
+     - **Beat-synced pattern interrupt:** Setiap `beat`, `sticker`, dan `soundDesign` wajib diikat ke detik spesifik saat pembicara mengucap angka, kontras, atau klaim mengejutkan — bukan detik acak.
+     - **Aturan zona aman (anti-tabrakan):** Maksimal 1 sticker per scene (atau `[]` di `hook` jika headline sudah kuat); dilarang memakai posisi sticker yang sama lebih dari sekali; dilarang `captions.position: "top"` jika scene memakai `badge`/`headline` atau `beat.position: "upper-card"`; dilarang `beat.position: "lower-card"` jika `captions.position: "center-lower"`; dilarang sticker `center-left`/`center-right` atau `beat.position: "center-pop"` jika `captions.position: "center"`.
   3. **REVIEW WAJIB DARI POV PENONTON (SEBELUM MENULIS JSON):**
      Sebelum menyajikan JSON final, LLM WAJIB menguji rancangan visualnya dari sudut pandang penonton asing di feed HP dan menuliskan hasil audit singkatnya:
      - *Tes 3 detik pertama:* Apakah visual + hook langsung bikin berhenti scroll tanpa konteks sebelumnya?

@@ -108,20 +108,48 @@
         "enabled": { "type": "boolean" },
         "mode": {
           "type": "string",
-          "enum": ["word-highlight", "phrase", "off"]
+          "enum": [
+            "word-highlight",
+            "boxed-karaoke",
+            "word-pop",
+            "editorial-emphasis",
+            "pill-karaoke",
+            "word-sweep",
+            "kinetic-slam",
+            "phrase",
+            "off"
+          ]
         },
         "position": {
           "type": "string",
-          "enum": ["lower-third", "center-lower"]
+          "enum": ["lower-third", "center-lower", "center", "top"]
         },
         "maxWordsPerLine": { "type": "integer", "minimum": 1 },
         "fontMood": {
           "type": "string",
-          "enum": ["default", "heavy-condensed", "bold-geometric"]
+          "enum": [
+            "default",
+            "heavy-condensed",
+            "bold-geometric",
+            "rounded-playful",
+            "monospace-tech",
+            "editorial-serif",
+            "handwritten",
+            "pixel-arcade"
+          ]
         },
         "decoration": {
           "type": "string",
-          "enum": ["thick-outline", "hard-shadow", "soft-glow", "clean-flat"]
+          "enum": [
+            "thick-outline",
+            "hard-shadow",
+            "soft-glow",
+            "clean-flat",
+            "gradient-fill",
+            "3d-extrusion",
+            "double-shadow",
+            "distorted"
+          ]
         },
         "textColor": { "type": "string" },
         "highlightColor": { "type": "string" },
@@ -240,17 +268,43 @@
             "subtle-float"
           ]
         },
+        "textSize": {
+          "type": "string",
+          "enum": ["sm", "md", "lg", "xl", "hero"]
+        },
+        "textColor": { "type": "string" },
+        "textGradient": {
+          "type": ["string", "array"]
+        },
         "textTreatment": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
             "fontMood": {
               "type": "string",
-              "enum": ["default", "heavy-condensed", "bold-geometric"]
+              "enum": [
+                "default",
+                "heavy-condensed",
+                "bold-geometric",
+                "rounded-playful",
+                "monospace-tech",
+                "editorial-serif",
+                "handwritten",
+                "pixel-arcade"
+              ]
             },
             "decoration": {
               "type": "string",
-              "enum": ["thick-outline", "hard-shadow", "soft-glow", "clean-flat"]
+              "enum": [
+                "thick-outline",
+                "hard-shadow",
+                "soft-glow",
+                "clean-flat",
+                "gradient-fill",
+                "3d-extrusion",
+                "double-shadow",
+                "distorted"
+              ]
             }
           }
         },
@@ -277,7 +331,11 @@
             "elastic-push",
             "circle-iris",
             "whip-pan",
-            "light-leak"
+            "light-leak",
+            "chromatic-split",
+            "glitch-wipe",
+            "domain-warp",
+            "beat-freeze"
           ]
         },
         "transitionOut": {
@@ -291,7 +349,11 @@
             "elastic-push",
             "circle-iris",
             "whip-pan",
-            "light-leak"
+            "light-leak",
+            "chromatic-split",
+            "glitch-wipe",
+            "domain-warp",
+            "beat-freeze"
           ]
         },
         "backgroundTreatment": {
@@ -307,6 +369,7 @@
         },
         "badge": { "type": "string" },
         "headline": { "type": "string" },
+        "headlineDuration": { "type": "number", "minimum": 0.5 },
         "highlightWords": {
           "type": "array",
           "items": { "type": "string" }
@@ -325,6 +388,71 @@
             "blur-reveal",
             "elastic"
           ]
+        },
+        "textTransitionOut": {
+          "type": "string",
+          "enum": ["fade", "slide-up", "shrink", "glitch-out", "slam-away", "none"]
+        },
+        "overlayElements": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "speed-lines",
+              "warning-stripes",
+              "neon-frame",
+              "film-grain",
+              "camcorder-hud",
+              "vox-grid"
+            ]
+          }
+        },
+        "beats": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["at", "title"],
+            "properties": {
+              "at": { "type": "number", "minimum": 0 },
+              "duration": { "type": "number", "minimum": 0.8 },
+              "style": {
+                "type": "string",
+                "enum": ["vox-card", "stat-pop", "editorial-quote", "pill-callout"]
+              },
+              "position": {
+                "type": "string",
+                "enum": ["top-banner", "upper-card", "lower-card", "center-pop"]
+              },
+              "eyebrow": { "type": "string" },
+              "title": { "type": "string" },
+              "highlight": { "type": "string" },
+              "icon": { "type": "string" }
+            }
+          }
+        },
+        "stickers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "icon": { "type": "string" },
+              "text": { "type": "string" },
+              "position": {
+                "type": "string",
+                "enum": ["top-right", "top-left", "center-right", "center-left", "bottom-right", "bottom-left"]
+              },
+              "animation": {
+                "type": "string",
+                "enum": ["pop", "shake", "bounce", "stamp", "fade"]
+              },
+              "at": { "type": "number", "minimum": 0 },
+              "bg": { "type": "string" },
+              "color": { "type": "string" },
+              "border": { "type": "string" }
+            }
+          }
         },
         "soundDesign": {
           "type": "array",

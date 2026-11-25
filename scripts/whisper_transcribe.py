@@ -57,14 +57,34 @@ def main():
             if i < len(words) - 1 and not next_pause:
                 end_t = words[i+1]["abs_start"]
             else:
-                end_t = round(curr[-1]["abs_start"] + 0.6, 2)
+                end_t = round(max(curr[-1]["abs_end"], curr[-1]["abs_start"] + 0.45), 2)
+
+            if end_t <= start_t:
+                end_t = round(start_t + 0.25, 2)
+
+            chunk_words = []
+            for j, cw in enumerate(curr):
+                w_start = round(cw["abs_start"], 2)
+                w_end = round(max(cw["abs_end"], w_start + 0.08), 2)
+                if j < len(curr) - 1:
+                    next_start = round(curr[j + 1]["abs_start"], 2)
+                    if next_start > w_start + 0.04:
+                        w_end = min(w_end, next_start)
+                else:
+                    w_end = min(max(w_end, w_start + 0.12), round(end_t, 2))
+                chunk_words.append({
+                    "text": cw["word"],
+                    "start": w_start,
+                    "end": round(max(w_end, w_start + 0.04), 2)
+                })
 
             text_chunk = " ".join([cw["word"] for cw in curr])
             chunks.append({
                 "start": round(start_t, 2),
                 "end": round(end_t, 2),
                 "text": text_chunk,
-                "speakerId": "guest"
+                "speakerId": "guest",
+                "words": chunk_words
             })
             curr = []
 
