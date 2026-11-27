@@ -353,10 +353,10 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
   4. Setelah konsep dipilih dan lolos review POV penonton, LLM merumuskan berkas `podcast-clip.json` lengkap yang 100% valid terhadap schema kontrak.
   5. **ATURAN MUTLAK SUBTITLE (OTOMASI DETERMINISTIK SKRIP):**
      LLM DILARANG KERAS menyusun atau mengarang berkas `input/transcript.json` secara manual di chat! Pekerjaan timestamp mikro dan pemotongan subtitle 100% diotomatisasi secara presisi oleh skrip lokal (`npm run dev`) langsung dari suara video `working/main-clip-portrait.mp4`.
-  6. LLM memberikan panduan operasional kepada User untuk menyalin blok spesifikasi ke `podcast-clip.json`.
+  6. Setelah JSON final, LLM memberikan satu instruksi operasional sekaligus: simpan JSON sebagai `podcast-clip.json`, lalu jalankan `npm run dev`. Setelah User memeriksa preview dan menyetujuinya, hentikan preview dengan `Ctrl+C`, jalankan `npm run render`, lalu ambil screenshot thumbnail dengan perintah FFmpeg di Tahap 7. Jangan meminta User mengonfirmasi penyimpanan JSON lebih dulu atau menunggu giliran respons LLM untuk memberikan perintah berikutnya.
 - **Command:** *(Tidak ada)*.
 - **Hasil yang diharapkan:** Berkas `podcast-clip.json` tersimpan dengan data spesifikasi riil dan valid.
-- **Langkah setelahnya:** LLM wajib menginstruksikan User untuk memastikan file tersimpan dan mengonfirmasi penyelesaian simpan di chat, lalu melanjutkan ke Tahap 6 untuk sinkronisasi otomatis dan preview.
+- **Langkah setelahnya:** Dalam respons yang sama dengan JSON, LLM menginstruksikan User menyimpan file lalu menjalankan `npm run dev`. User memeriksa preview; bila perlu revisi, LLM memperbarui JSON. Jika preview disetujui, User menghentikan proses preview dengan `Ctrl+C` dan menjalankan `npm run render` serta perintah screenshot yang sudah diberikan.
 
 ---
 
@@ -387,7 +387,7 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
 - **Hasil yang diharapkan:**
   - Berkas `input/transcript.json`, `working/hook-portrait.mp4`, dan `working/audio/program-audio.wav` berhasil dibuat otomatis.
   - Preview interaktif HyperFrames terbuka di browser tanpa pesan error linting.
-- **Langkah setelahnya:** Gemini Web wajib menginstruksikan User untuk melaporkan hasil review preview: jika ada revisi teks atau timing, minta perubahan spesifik untuk diperbaiki di `podcast-clip.json`; jika komposisi sudah memuaskan, User menyatakan persetujuan render di chat agar Gemini Web memberikan command render untuk Tahap 7.
+- **Langkah setelahnya:** Jika ada revisi teks atau timing, User menyebutkan perubahan yang diperlukan agar JSON dapat diperbarui. Jika komposisi sudah disetujui, User menghentikan preview dengan `Ctrl+C` lalu langsung menjalankan `npm run render` dan perintah screenshot yang telah diberikan bersama JSON. LLM tidak menunggu persetujuan di chat untuk baru memberikan command tersebut.
 
 ---
 
@@ -397,7 +397,7 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
 - **Pelaksana:** Terminal (User).
 - **Lokasi:** Root folder `podcast-clipper-playbook/`.
 - **Aksi:**
-  1. Gemini Web memberikan dua perintah terminal siap salin berurutan:
+  1. Perintah render dan screenshot sudah diberikan sekaligus setelah JSON di Tahap 5. User menjalankannya setelah preview disetujui, dengan menghentikan server preview (`Ctrl+C`) terlebih dahulu:
      ```bash
      npm run render
      ffmpeg -y -ss 1 -i "output/final-video.mp4" -vframes 1 -q:v 2 "working/thumbnail-reference.jpg"
@@ -409,7 +409,7 @@ Kontrak mutlak antara LLM Web dan renderer HyperFrames:
 - **Hasil yang diharapkan:**
   - `output/final-video.mp4` (video vertikal 1080x1920 30fps H.264).
   - `working/thumbnail-reference.jpg` (frame referensi ekspresi wajah).
-- **Langkah setelahnya:** Gemini Web wajib memandu User untuk memeriksa keberadaan kedua file tersebut, kemudian menginstruksikan User mengunggah berkas `working/thumbnail-reference.jpg` langsung ke chat Gemini Web untuk dianalisis di Tahap 8.
+- **Langkah setelahnya:** Gemini Web memandu User memeriksa keberadaan kedua file tersebut, kemudian menginstruksikan User mengunggah berkas `working/thumbnail-reference.jpg` langsung ke chat Gemini Web untuk dianalisis di Tahap 8.
 
 ---
 
